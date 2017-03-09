@@ -33,7 +33,6 @@ Certain opcodes aren't supported on all platforms
 | parami | P | I | 32-bit | load an int parameter (register or stack location) |
 | paramq | P | Q | 64-bit | load a quad parameter (register or stack location) |
 | allocp | IorF | P | | allocate stack space (result is an address) |
-
 | reti | Op1 | V | | return an int |
 | retq | Op1 | V | 64-bit | return a quad |
 | retd | Op1 | V | | return a double |
