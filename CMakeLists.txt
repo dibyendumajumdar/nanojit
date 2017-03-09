@@ -13,6 +13,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL Linux)
     -DAVMPLUS_UNIX=1
     -DAVMPLUS_LINUX=1
   )
+  set(EXTRA_LIBS dl)
 elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin)
   add_definitions (
     -DAVMPLUS_UNIX=1
@@ -69,10 +70,10 @@ include_directories(
 )
 
 set (NATIVE_SRC
-		nanojit/Native${NANOJIT_ARCH}.cpp
+        nanojit/Native${NANOJIT_ARCH}.cpp
 	)
 set (LIB_SRCS
-		nanojit/Allocator.cpp
+        nanojit/Allocator.cpp
         nanojit/Assembler.cpp
         nanojit/CodeAlloc.cpp
         nanojit/Containers.cpp
@@ -88,6 +89,7 @@ set (LIB_SRCS
 set (LIRASM_SRCS utils/nanojit-lirasm/lirasm/lirasm.cpp)
 
 add_library(nanojit ${LIB_SRCS} ${NATIVE_SRC})
+target_link_libraries(nanojit ${EXTRA_LIBS})
 
 add_executable(lirasm ${LIRASM_SRCS})
 target_link_libraries(lirasm nanojit)

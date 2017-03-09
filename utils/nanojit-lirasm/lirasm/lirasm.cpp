@@ -2303,7 +2303,7 @@ FragmentAssembler::assembleRandomFragment(int nIns)
 #endif
 
         case LOP_I_F:
-            if (!Ds.empty()) {
+            if (!Fs.empty()) {
                 ins = mLir->ins1(rndPick(I_F_ops), rndPick(Fs));
                 addOrReplace(Is, ins);
                 n++;
