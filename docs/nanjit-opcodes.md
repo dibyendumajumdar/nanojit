@@ -38,19 +38,17 @@ Certain opcodes aren't supported on all platforms
 | retd | Op1 | V | | return a double |
 | retf | Op1 | V | | return a float |
 | retf4 | Op1 | V | | return a float4 |
-
-OP___(livei,    Op1,  V,    0)  // extend live range of an int
-OP_64(liveq,    Op1,  V,    0)  // extend live range of a quad
-OP___(lived,    Op1,  V,    0)  // extend live range of a double
-OP___(livef,    Op1,  V,    0)  // extend live range of a float
-OP___(livef4,   Op1,  V,    0)  // extend live range of a float4
-
-OP___(file,     Op1,  V,    0)  // [VTune] source filename for debug symbols
-OP___(line,     Op1,  V,    0)  // [VTune] source line number for debug symbols
-OP___(pc,       Op1,  V,    0)  // [Shark] record the machine address of this instruction
-OP___(comment,  Op1,  V,    0)  // a comment shown, on its own line, in LIR dumps
-OP___(safe,     Safe, V,    0)  // deoptimization safepoint
-OP___(endsafe,  Safe, V,    0)  // deoptimization safepoint
+| livei | Op1 | V | | extend live range of an int |
+| liveq | Op1 | V | 64-bit | extend live range of a quad |
+| lived | Op1 | V | | extend live range of a double |
+| livef | Op1 | V | | extend live range of a float |
+| livef4 | Op1 | V | | extend live range of a float4 |
+| file | Op1 | V | | [VTune] source filename for debug symbols |
+| line | Op1 | V | | [VTune] source line number for debug symbols |
+| pc | Op1 | V | | [Shark] record the machine address of this instruction |
+| comment | Op1 | V | | a comment shown, on its own line, in LIR dumps |
+| safe | Safe | V | | deoptimization safepoint |
+| endsafe | Safe | V | | deoptimization safepoint |
 
 //---------------------------------------------------------------------------
 // Loads and stores
