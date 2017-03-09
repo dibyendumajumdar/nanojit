@@ -253,28 +253,28 @@ Note: we don't do lt/gt/le/ge comparisons on float4 values
 
 rounding behavior of LIR_d2f is platform-specific
 
-Platform     Asm code        Behavior
- --------     --------        --------
-x86 w/ x87   FST32           uses current FP control word (default is rounding)
-x86 w/ SSE   cvtsd2ss        according to MXCSR register (default is round to nearest)
-x64 (SSE)    cvtsd2ss        according to MXCSR register (default is round to nearest)
-others       not implemented yet
+| Platform |    Asm code |       Behavior |
+| --- |     --- |        --- |
+| x86 w/ x87 |  FST32  |         uses current FP control word (default is rounding) |
+| x86 w/ SSE |  cvtsd2ss   |     according to MXCSR register (default is round to nearest) |
+| x64 (SSE)  |  cvtsd2ss   |     according to MXCSR register (default is round to nearest) |
+| others     | |  not implemented yet |
 
 The rounding behavior of LIR_d2i is platform specific.
 
-Platform     Asm code        Behavior
---------     --------        --------
-x86 w/ x87   fist            uses current FP control word (default is rounding)
-x86 w/ SSE   cvttsd2si       performs round to zero (truncate)
-x64 (SSE)    cvttsd2si       performs round to zero (truncate) 
-PowerPC                      unsupported
-ARM          ftosid          round to nearest
-MIPS         trunc.w.d       performs round to zero (truncate)
-SH4          frtc            performs round to zero (truncate)
-SPARC        fdtoi           performs round to zero (truncate)
+| Platform  |   Asm code  |      Behavior |
+| --- |    --- |        --- |
+| x86 w/ x87 |  fist |           uses current FP control word (default is rounding) |
+| x86 w/ SSE |  cvttsd2si   |    performs round to zero (truncate) |
+| x64 (SSE) |   cvttsd2si   |       performs round to zero (truncate) | 
+| PowerPC | |                      unsupported |
+| ARM  |        ftosid    |      round to nearest |
+| MIPS |        trunc.w.d  |      performs round to zero (truncate) |
+| SH4   |       frtc     |       performs round to zero (truncate) |
+| SPARC   |     fdtoi    |       performs round to zero (truncate) |
 
-round to zero examples:  1.9 -> 1, 1.1 -> 1, -1.1 -> -1, -1.9 -> -1
-round to nearest examples: 1.9 -> 2, 1.1 -> 1, -1.1 -> -1, -1.9 -> -2
+* round to zero examples:  1.9 -> 1, 1.1 -> 1, -1.1 -> -1, -1.9 -> -1
+* round to nearest examples: 1.9 -> 2, 1.1 -> 1, -1.1 -> -1, -1.9 -> -2
 
 | Opcode | Todo | Return Type | Featured | Description |
 | --- | --- | --- | --- | --- |
