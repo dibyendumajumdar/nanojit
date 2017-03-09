@@ -34,11 +34,11 @@ Certain opcodes aren't supported on all platforms
 | paramq | P | Q | 64-bit | load a quad parameter (register or stack location) |
 | allocp | IorF | P | | allocate stack space (result is an address) |
 
-OP___(reti,     Op1,  V,    0)  // return an int
-OP_64(retq,     Op1,  V,    0)  // return a quad
-OP___(retd,     Op1,  V,    0)  // return a double
-OP___(retf,     Op1,  V,    0)  // return a float
-OP___(retf4,    Op1,  V,    0)  // return a float4
+| reti | Op1 | V | | return an int |
+| retq | Op1 | V | 64-bit | return a quad |
+| retd | Op1 | V | | return a double |
+| retf | Op1 | V | | return a float |
+| retf4 | Op1 | V | | return a float4 |
 
 OP___(livei,    Op1,  V,    0)  // extend live range of an int
 OP_64(liveq,    Op1,  V,    0)  // extend live range of a quad
