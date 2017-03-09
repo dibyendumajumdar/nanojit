@@ -50,310 +50,292 @@ Certain opcodes aren't supported on all platforms
 | safe | Safe | V | | deoptimization safepoint |
 | endsafe | Safe | V | | deoptimization safepoint |
 
-//---------------------------------------------------------------------------
-// Loads and stores
-//---------------------------------------------------------------------------
-OP___(ldc2i,    Ld,   I,   -1)  // load char and sign-extend to an int
-OP___(lds2i,    Ld,   I,   -1)  // load short and sign-extend to an int
-OP___(lduc2ui,  Ld,   I,   -1)  // load unsigned char and zero-extend to an unsigned int
-OP___(ldus2ui,  Ld,   I,   -1)  // load unsigned short and zero-extend to an unsigned int
-OP___(ldi,      Ld,   I,   -1)  // load int
-OP_64(ldq,      Ld,   Q,   -1)  // load quad
-OP___(ldd,      Ld,   D,   -1)  // load double
-OP___(ldf,      Ld,   F,   -1)  // load float
-OP___(ldf2d,    Ld,   D,   -1)  // load float and extend to a double
-OP___(ldf4,     Ld,   F4,  -1)  // load float4 (SIMD, 4 floats)
+## Loads and stores
 
-OP___(sti2c,    St,   V,    0)  // store int truncated to char
-OP___(sti2s,    St,   V,    0)  // store int truncated to short
-OP___(sti,      St,   V,    0)  // store int
-OP_64(stq,      St,   V,    0)  // store quad
-OP___(std,      St,   V,    0)  // store double
-OP___(std2f,    St,   V,    0)  // store double as a float (losing precision)
-OP___(stf,      St,   V,    0)  // store float
-OP___(stf4,     St,   V,    0)  // store float4 (SIMD, 4 floats)
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| ldc2i | Ld | I | | load char and sign-extend to an int |
+| lds2i | Ld | I | | load short and sign-extend to an int |
+| lduc2ui | Ld | I | | load unsigned char and zero-extend to an unsigned int |
+| ldus2ui | Ld | I | | load unsigned short and zero-extend to an unsigned int |
+| ldi | Ld | I | | load int |
+| ldq | Ld | Q | 64-bit | load quad |
+| ldd | Ld | D | | load double |
+| ldf | Ld | F | | load float |
+| ldf2d | Ld | D | | load float and extend to a double |
+| ldf4 | Ld | F4 | | load float4 (SIMD, 4 floats) |
+| sti2c | St | V | | store int truncated to char |
+| sti2s | St | V | | store int truncated to short |
+| sti | St | V | | store int |
+| stq | St | V | 64-bit | store quad |
+| std | St | V | |  store double |
+| std2f|     St|    V|     | |  store double as a float (losing precision) |
+| stf|       St|    V|     | |  store float |
+| stf4|      St|    V|     | |  store float4 (SIMD|  4 floats) |
 
 
-//---------------------------------------------------------------------------
-// Calls
-//---------------------------------------------------------------------------
-OP___(callv,    C,    V,   -1)  // call subroutine that returns void
-OP___(calli,    C,    I,   -1)  // call subroutine that returns an int
-OP_64(callq,    C,    Q,   -1)  // call subroutine that returns a quad
-OP___(calld,    C,    D,   -1)  // call subroutine that returns a double
-OP___(callf,    C,    F,   -1)  // call subroutine that returns a float
-OP___(callf4,   C,    F4,  -1)  // call subroutine that returns a float4
+## Calls
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| callv|     C|     V|     |  call subroutine that returns void |
+| calli|     C|     I|     |  call subroutine that returns an int |
+|callq|     C|     Q| 64-bit   |  call subroutine that returns a quad |
+| calld|     C|     D|    |  call subroutine that returns a double |
+| callf|     C|     F|    |  call subroutine that returns a float |
+| callf4|    C|     F4|   |  call subroutine that returns a float4 |
 
-//---------------------------------------------------------------------------
-// Branches and labels
-//---------------------------------------------------------------------------
-// 'jt' and 'jf' must be adjacent so that (op ^ 1) gives the opposite one.
-// Static assertions in LIR.h check this requirement.
+## Branches and labels
 
-OP___(j,        Op2,  V,    0)  // jump always
-OP___(jt,       Op2,  V,    0)  // jump if true
-OP___(jf,       Op2,  V,    0)  // jump if false
-OP___(jtbl,     Jtbl, V,    0)  // jump to address in table
+'jt' and 'jf' must be adjacent so that (op ^ 1) gives the opposite one.
+Static assertions in LIR.h check this requirement.
 
-OP___(label,    Op0,  V,    0)  // a jump target (no machine code is emitted for this)
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| j|         Op2|   V|     |  jump always |
+| jt|        Op2|   V|     |  jump if true |
+| jf|        Op2|   V|     |  jump if false |
+| jtbl|      Jtbl|  V|     |  jump to address in table |
+| label|     Op0|   V|     |  a jump target (no machine code is emitted for this) |
 
-//---------------------------------------------------------------------------
-// Guards
-//---------------------------------------------------------------------------
-// 'xt' and 'xf' must be adjacent so that (op ^ 1) gives the opposite one.
-// Static assertions in LIR.h check this requirement.
+## Guards
+'xt' and 'xf' must be adjacent so that (op ^ 1) gives the opposite one.
+Static assertions in LIR.h check this requirement.
+
 OP_UN (align_guards)
-OP___(x,        Op2,  V,    0)  // exit always
-OP___(xt,       Op2,  V,    1)  // exit if true
-OP___(xf,       Op2,  V,    1)  // exit if false
-// A LIR_xbarrier cause no code to be generated, but it acts like a never-taken
-// guard in that it inhibits certain optimisations, such as dead stack store
-// elimination.
-OP___(xbarrier, Op2,  V,    0)
 
-//---------------------------------------------------------------------------
-// Immediates
-//---------------------------------------------------------------------------
-OP___(immi,     IorF, I,    1)  // int immediate
-OP_64(immq,     QorD, Q,    1)  // quad immediate
-OP___(immd,     QorD, D,    1)  // double immediate
-OP___(immf,     IorF, F,    1)  // float immediate
-OP___(immf4,    F4,   F4,   1)  // float4 immediate
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| x|         Op2|   V|     |  exit always |
+| xt|        Op2|   V|     | exit if true |
+| xf|        Op2|   V|     | exit if false |
+| xbarrier|  Op2|   V|     | A LIR_xbarrier cause no code to be generated, but it acts like a never-taken guard in that it inhibits certain optimisations, such as dead stack store elimination. |
 
-//---------------------------------------------------------------------------
-// Comparisons
-//---------------------------------------------------------------------------
+## Immediates
 
-// All comparisons return an int:  0 on failure and 1 on success.
-//
-// Within each type group, order must be preserved so that, except for eq*, (op
-// ^ 1) gives the opposite one (eg. lt ^ 1 == gt).  eq* must have odd numbers
-// for this to work.  They must also remain contiguous so that opcode range
-// checking works correctly.  Static assertions in LIR.h check these
-// requirements.
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| immi|      IorF|  I|     | int immediate |
+|immq|      QorD|  Q| 64-bit    | quad immediate |
+| immd|      QorD|  D|     | double immediate |
+| immf|      IorF|  F|     | float immediate |
+| immf4|     F4|    F4|    | float4 immediate |
+
+## Comparisons
+
+All comparisons return an int:  0 on failure and 1 on success.
+Within each type group, order must be preserved so that, except for eq*, (op
+^ 1) gives the opposite one (eg. lt ^ 1 == gt).  eq* must have odd numbers
+for this to work.  They must also remain contiguous so that opcode range
+checking works correctly.  Static assertions in LIR.h check these
+requirements.
+
 OP_UN (align_eqi)
-OP___(eqi,      Op2,  I,    1)  //          int equality
-OP___(lti,      Op2,  I,    1)  //   signed int less-than
-OP___(gti,      Op2,  I,    1)  //   signed int greater-than
-OP___(lei,      Op2,  I,    1)  //   signed int less-than-or-equal
-OP___(gei,      Op2,  I,    1)  //   signed int greater-than-or-equal
-OP___(ltui,     Op2,  I,    1)  // unsigned int less-than
-OP___(gtui,     Op2,  I,    1)  // unsigned int greater-than
-OP___(leui,     Op2,  I,    1)  // unsigned int less-than-or-equal
-OP___(geui,     Op2,  I,    1)  // unsigned int greater-than-or-equal
+
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| eqi|       Op2|   I|     |          int equality | 
+| lti|       Op2|   I|     |   signed int less-than |
+| gti|       Op2|   I|     |   signed int greater-than |
+| lei|       Op2|   I|     |   signed int less-than-or-equal |
+| gei|       Op2|   I|     |   signed int greater-than-or-equal |
+| ltui|      Op2|   I|     | unsigned int less-than |
+| gtui|      Op2|   I|     | unsigned int greater-than |
+| leui|      Op2|   I|     | unsigned int less-than-or-equal |
+| geui|      Op2|   I|     | unsigned int greater-than-or-equal |
 
 OP_UN_64(align_eqq)
-OP_64(eqq,      Op2,  I,    1)  //          quad equality
-OP_64(ltq,      Op2,  I,    1)  //   signed quad less-than
-OP_64(gtq,      Op2,  I,    1)  //   signed quad greater-than
-OP_64(leq,      Op2,  I,    1)  //   signed quad less-than-or-equal
-OP_64(geq,      Op2,  I,    1)  //   signed quad greater-than-or-equal
-OP_64(ltuq,     Op2,  I,    1)  // unsigned quad less-than
-OP_64(gtuq,     Op2,  I,    1)  // unsigned quad greater-than
-OP_64(leuq,     Op2,  I,    1)  // unsigned quad less-than-or-equal
-OP_64(geuq,     Op2,  I,    1)  // unsigned quad greater-than-or-equal
+
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+|eqq|       Op2|   I| 64-bit    |          quad equality |
+|ltq|       Op2|   I| 64-bit    |   signed quad less-than |
+|gtq|       Op2|   I| 64-bit    |   signed quad greater-than |
+|leq|       Op2|   I| 64-bit    |   signed quad less-than-or-equal |
+|geq|       Op2|   I| 64-bit    |   signed quad greater-than-or-equal |
+|ltuq|      Op2|   I| 64-bit    | unsigned quad less-than |
+|gtuq|      Op2|   I| 64-bit    | unsigned quad greater-than |
+|leuq|      Op2|   I| 64-bit    | unsigned quad less-than-or-equal |
+|geuq|      Op2|   I| 64-bit    | unsigned quad greater-than-or-equal |
 
 OP_UN_64(align_eqd)
-OP___(eqd,      Op2,  I,    1)  // double equality
-OP___(ltd,      Op2,  I,    1)  // double less-than
-OP___(gtd,      Op2,  I,    1)  // double greater-than
-OP___(led,      Op2,  I,    1)  // double less-than-or-equal
-OP___(ged,      Op2,  I,    1)  // double greater-than-or-equal
+
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| eqd|       Op2|   I|     | double equality |
+| ltd|       Op2|   I|     | double less-than |
+| gtd|       Op2|   I|     | double greater-than |
+| led|       Op2|   I|     | double less-than-or-equal |
+| ged|       Op2|   I|     | double greater-than-or-equal |
 
 OP_UN (align_eqf)
-OP___(eqf,      Op2,  I,    1)  // float equality
-OP___(ltf,      Op2,  I,    1)  // float less-than
-OP___(gtf,      Op2,  I,    1)  // float greater-than
-OP___(lef,      Op2,  I,    1)  // float less-than-or-equal
-OP___(gef,      Op2,  I,    1)  // float greater-than-or-equal
 
-OP___(eqf4,     Op2,  I,    1)  // float4 equality
-// Note: we don't do lt/gt/le/ge comparisons on float4 values
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| eqf|       Op2|   I|     | float equality |
+| ltf|       Op2|   I|     | float less-than |
+| gtf|       Op2|   I|     | float greater-than |
+| lef|       Op2|   I|     | float less-than-or-equal |
+| gef|       Op2|   I|     | float greater-than-or-equal |
+| eqf4|      Op2|   I|     | float4 equality |
 
-//---------------------------------------------------------------------------
-// Arithmetic
-//---------------------------------------------------------------------------
-OP___(negi,     Op1,  I,    1)  // negate int
-OP___(addi,     Op2,  I,    1)  // add int
-OP___(subi,     Op2,  I,    1)  // subtract int
-OP___(muli,     Op2,  I,    1)  // multiply int
-OP_86(divi,     Op2,  I,    1)  // divide int
-// LIR_modi is a hack.  It's only used on i386/X64.  The operand is the result
-// of a LIR_divi because on i386/X64 div and mod results are computed by the
-// same instruction.
-OP_86(modi,     Op1,  I,    1)  // modulo int
+Note: we don't do lt/gt/le/ge comparisons on float4 values
 
-OP___(noti,     Op1,  I,    1)  // bitwise-NOT int
-OP___(andi,     Op2,  I,    1)  // bitwise-AND int
-OP___(ori,      Op2,  I,    1)  // bitwise-OR int
-OP___(xori,     Op2,  I,    1)  // bitwise-XOR int
+## Arithmetic
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| negi|      Op1|   I|     | negate int |
+| addi|      Op2|   I|     | add int |
+| subi|      Op2|   I|     | subtract int |
+| muli|      Op2|   I|     | multiply int |
+| divi|      Op2|   I|  32-bit X86   | divide int |
+| modi|      Op1|   I| 32-bit X86    | modulo int. LIR_modi is a hack.  It's only used on i386/X64.  The operand is the result of a LIR_divi because on i386/X64 div and mod results are computed by the same instruction. |
+| noti|      Op1|   I|     | bitwise-NOT int |
+| andi|      Op2|   I|     | bitwise-AND int |
+| ori|       Op2|   I|     | bitwise-OR int |
+| xori|      Op2|   I|     | bitwise-XOR int |
+| lshi|      Op2|   I|     | left shift int. For all three integer shift operations, only the bottom five bits of the second operand are used, and they are treated as unsigned.  This matches x86 semantics. |
+| rshi|      Op2|   I|     | right shift int (>>) |
+| rshui|     Op2|   I|     | right shift unsigned int (>>>) |
+|addq|      Op2|   Q| 64-bit    | add quad |
+|subq|      Op2|   Q| 64-bit    | subtract quad |
+|andq|      Op2|   Q| 64-bit    | bitwise-AND quad |
+|orq|       Op2|   Q| 64-bit    | bitwise-OR quad |
+|xorq|      Op2|   Q| 64-bit    | bitwise-XOR quad |
+|lshq|      Op2|   Q| 64-bit    | left shift quad;           2nd operand is an int. For all three quad shift operations, only the bottom six bits of the second operand are used, and they are treated as unsigned.  This matches x86-64 semantics. |
+|rshq|      Op2|   Q| 64-bit    | right shift quad;          2nd operand is an int |
+|rshuq|     Op2|   Q| 64-bit    | right shift unsigned quad; 2nd operand is an int |
+| negd|      Op1|   D|     | negate double |
+| absd|      Op1|   D|     | absolute value of double |
+| sqrtd|     Op1|   D|     | sqrt double |
+| addd|      Op2|   D|     | add double |
+| subd|      Op2|   D|     | subtract double |
+| muld|      Op2|   D|     | multiply double |
+| divd|      Op2|   D|     | divide double |
+| modd|      Op2|   D|     | modulo double. LIR_modd is just a place-holder opcode, ie. the back-ends cannot generate code for it.  It's used in TraceMonkey briefly but is always demoted to a LIR_modl or converted to a function call before Nanojit has to do anything serious with it. |
+| negf|      Op1|   F|     | negate float |
+| absf|      Op1|   F|     | absolute value of float |
+| sqrtf|     Op1|   F|     | sqrt float |
+| addf|      Op2|   F|     | add float |
+| subf|      Op2|   F|     | subtract float |
+| mulf|      Op2|   F|     | multiply float |
+| divf|      Op2|   F|     | divide float |
+| negf4|     Op1|  F4|     | negate float4 |
+| absf4|     Op1|  F4|     | absolute value of float4 |
+| sqrtf4|    Op1|  F4|     | sqrt float4 |
+| addf4|     Op2|  F4|     | add float4 |
+| subf4|     Op2|  F4|     | subtract float4 |
+| mulf4|     Op2|  F4|     | multiply float4 |
+| divf4|     Op2|  F4|     | divide float4 |
+| recipf|    Op1|   F|     | float reciprocal |
+| rsqrtf|    Op1|   F|     | float reciprocal square root |
+| minf|      Op2|   F|     | float min |
+| maxf|      Op2|   F|     | float max |
+| cmpgtf4|   Op2|  F4|     | float4.isGreater |
+| cmpltf4|   Op2|  F4|     | float4.isLess |
+| cmpgef4|   Op2|  F4|     | float4.isGreaterOrEqual |
+| cmplef4|   Op2|  F4|     | float4.isLessOrEqual |
+| cmpeqf4|   Op2|  F4|     | float4.isEqual |
+| cmpnef4|   Op2|  F4|     | float4.isNotEqual |
+| recipf4|   Op1|  F4|     | float4 reciprocal |
+| rsqrtf4|   Op1|  F4|     | float4 reciprocal square root |
+| minf4|     Op2|  F4|     | float4 min |
+| maxf4|     Op2|  F4|     | float4 max |
+| dotf4|     Op2|   F|     | 4-component dot product |
+| dotf3|     Op2|   F|     | 3-component dot product |
+| dotf2|     Op2|   F|     | 2-component dot product |
+| cmovi|     Op3|   I|     | conditional move int |
+|cmovq|     Op3|   Q| 64-bit    | conditional move quad |
+| cmovd|     Op3|   D|     | conditional move double |
+| cmovf|     Op3|   F|     | conditional move float |
+| cmovf4|    Op3|  F4|     | conditional move float4 |
 
-// For all three integer shift operations, only the bottom five bits of the
-// second operand are used, and they are treated as unsigned.  This matches
-// x86 semantics.
-OP___(lshi,     Op2,  I,    1)  // left shift int
-OP___(rshi,     Op2,  I,    1)  // right shift int (>>)
-OP___(rshui,    Op2,  I,    1)  // right shift unsigned int (>>>)
+## Conversions
 
-OP_64(addq,     Op2,  Q,    1)  // add quad
-OP_64(subq,     Op2,  Q,    1)  // subtract quad
+rounding behavior of LIR_d2f is platform-specific
 
-OP_64(andq,     Op2,  Q,    1)  // bitwise-AND quad
-OP_64(orq,      Op2,  Q,    1)  // bitwise-OR quad
-OP_64(xorq,     Op2,  Q,    1)  // bitwise-XOR quad
+Platform     Asm code        Behavior
+ --------     --------        --------
+x86 w/ x87   FST32           uses current FP control word (default is rounding)
+x86 w/ SSE   cvtsd2ss        according to MXCSR register (default is round to nearest)
+x64 (SSE)    cvtsd2ss        according to MXCSR register (default is round to nearest)
+others       not implemented yet
 
-// For all three quad shift operations, only the bottom six bits of the
-// second operand are used, and they are treated as unsigned.  This matches
-// x86-64 semantics.
-OP_64(lshq,     Op2,  Q,    1)  // left shift quad;           2nd operand is an int
-OP_64(rshq,     Op2,  Q,    1)  // right shift quad;          2nd operand is an int
-OP_64(rshuq,    Op2,  Q,    1)  // right shift unsigned quad; 2nd operand is an int
+The rounding behavior of LIR_d2i is platform specific.
 
-OP___(negd,     Op1,  D,    1)  // negate double
-OP___(absd,     Op1,  D,    1)  // absolute value of double
-OP___(sqrtd,    Op1,  D,    1)  // sqrt double
-OP___(addd,     Op2,  D,    1)  // add double
-OP___(subd,     Op2,  D,    1)  // subtract double
-OP___(muld,     Op2,  D,    1)  // multiply double
-OP___(divd,     Op2,  D,    1)  // divide double
+Platform     Asm code        Behavior
+--------     --------        --------
+x86 w/ x87   fist            uses current FP control word (default is rounding)
+x86 w/ SSE   cvttsd2si       performs round to zero (truncate)
+x64 (SSE)    cvttsd2si       performs round to zero (truncate) 
+PowerPC                      unsupported
+ARM          ftosid          round to nearest
+MIPS         trunc.w.d       performs round to zero (truncate)
+SH4          frtc            performs round to zero (truncate)
+SPARC        fdtoi           performs round to zero (truncate)
 
-// LIR_modd is just a place-holder opcode, ie. the back-ends cannot generate
-// code for it.  It's used in TraceMonkey briefly but is always demoted to a
-// LIR_modl or converted to a function call before Nanojit has to do anything
-// serious with it.
-OP___(modd,     Op2,  D,    1)  // modulo double
+round to zero examples:  1.9 -> 1, 1.1 -> 1, -1.1 -> -1, -1.9 -> -1
+round to nearest examples: 1.9 -> 2, 1.1 -> 1, -1.1 -> -1, -1.9 -> -2
 
-OP___(negf,     Op1,  F,    1)  // negate float
-OP___(absf,     Op1,  F,    1)  // absolute value of float
-OP___(sqrtf,    Op1,  F,    1)  // sqrt float
-OP___(addf,     Op2,  F,    1)  // add float
-OP___(subf,     Op2,  F,    1)  // subtract float
-OP___(mulf,     Op2,  F,    1)  // multiply float
-OP___(divf,     Op2,  F,    1)  // divide float
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+|i2q|       Op1|   Q| 64-bit    | sign-extend int to quad |
+|ui2uq|     Op1|   Q| 64-bit    | zero-extend unsigned int to unsigned quad |
+|q2i|       Op1|   I| 64-bit    | truncate quad to int (removes the high 32 bits) |
+|q2d|       Op1|   D| 64-bit    | convert quad to double |
+| i2d|       Op1|   D|     | convert int to double |
+| i2f|       Op1|   F|     | convert int to float |
+| ui2d|      Op1|   D|     | convert unsigned int to double |
+| ui2f|      Op1|   F|     | convert unsigned int to float |
+| f2d|       Op1|   D|     | convert float to double |
+| d2f|       Op1|   F|     | convert double to float (no exceptions raised) |
+| d2i|       Op1|   I|     | convert double to int (no exceptions raised) |
+| f2i|       Op1|   I|     | convert float to int (no exceptions raised) |
+| f2f4|      Op1|  F4|     | convert float to float4 (no exceptions raised) - essentially copies the float across all elements |
+| ffff2f4|   Op4|  F4|     | convert float to float4 (no exceptions raised) - essentially copies the float across all elements |
+| f4x|       Op1|   F|     | extract first float from a float4  |
+| f4y|       Op1|   F|     | extract second float from a float4  |
+| f4z|       Op1|   F|     | extract third float from a float4  |
+| f4w|       Op1|   F|     | extract fourth float from a float4  |
+| swzf4|     Op1b| F4|     | swizzle float4 according to 8-bit selector |
+|dasq|      Op1|   Q| 64-bit    | interpret the bits of a double as a quad |
+|qasd|      Op1|   D| 64-bit    | interpret the bits of a quad as a double |
 
-OP___(negf4,    Op1, F4,    1)  // negate float4
-OP___(absf4,    Op1, F4,    1)  // absolute value of float4
-OP___(sqrtf4,   Op1, F4,    1)  // sqrt float4
-OP___(addf4,    Op2, F4,    1)  // add float4
-OP___(subf4,    Op2, F4,    1)  // subtract float4
-OP___(mulf4,    Op2, F4,    1)  // multiply float4
-OP___(divf4,    Op2, F4,    1)  // divide float4
+##  Overflow arithmetic
 
-OP___(recipf,   Op1,  F,    1)  // float reciprocal
-OP___(rsqrtf,   Op1,  F,    1)  // float reciprocal square root
-OP___(minf,     Op2,  F,    1)  // float min
-OP___(maxf,     Op2,  F,    1)  // float max
+These all exit if overflow occurred.  The result is valid on either path.
 
-OP___(cmpgtf4,  Op2, F4,    1)  // float4.isGreater
-OP___(cmpltf4,  Op2, F4,    1)  // float4.isLess
-OP___(cmpgef4,  Op2, F4,    1)  // float4.isGreaterOrEqual
-OP___(cmplef4,  Op2, F4,    1)  // float4.isLessOrEqual
-OP___(cmpeqf4,  Op2, F4,    1)  // float4.isEqual
-OP___(cmpnef4,  Op2, F4,    1)  // float4.isNotEqual
-OP___(recipf4,  Op1, F4,    1)  // float4 reciprocal
-OP___(rsqrtf4,  Op1, F4,    1)  // float4 reciprocal square root
-OP___(minf4,    Op2, F4,    1)  // float4 min
-OP___(maxf4,    Op2, F4,    1)  // float4 max
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| addxovi|   Op3|   I|     | add int and exit on overflow |
+| subxovi|   Op3|   I|     | subtract int and exit on overflow |
+| mulxovi|   Op3|   I|     | multiply int and exit on overflow |
 
-OP___(dotf4,    Op2,  F,    1)  // 4-component dot product
-OP___(dotf3,    Op2,  F,    1)  // 3-component dot product
-OP___(dotf2,    Op2,  F,    1)  // 2-component dot product
+These all branch if overflow occurred.  The result is valid on either path.
 
-OP___(cmovi,    Op3,  I,    1)  // conditional move int
-OP_64(cmovq,    Op3,  Q,    1)  // conditional move quad
-OP___(cmovd,    Op3,  D,    1)  // conditional move double
-OP___(cmovf,    Op3,  F,    1)  // conditional move float
-OP___(cmovf4,   Op3, F4,    1)  // conditional move float4
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| addjovi|   Op3|   I|     | add int and branch on overflow |
+| subjovi|   Op3|   I|     | subtract int and branch on overflow |
+| muljovi|   Op3|   I|     | multiply int and branch on overflow |
+|addjovq|   Op3|   Q| 64-bit    | add quad and branch on overflow |
+|subjovq|   Op3|   Q| 64-bit    | subtract quad and branch on overflow |
 
-//---------------------------------------------------------------------------
-// Conversions
-//---------------------------------------------------------------------------
-OP_64(i2q,      Op1,  Q,    1)  // sign-extend int to quad
-OP_64(ui2uq,    Op1,  Q,    1)  // zero-extend unsigned int to unsigned quad
-OP_64(q2i,      Op1,  I,    1)  // truncate quad to int (removes the high 32 bits)
-OP_64(q2d,      Op1,  D,    1)  // convert quad to double
+## SoftFloat
 
-OP___(i2d,      Op1,  D,    1)  // convert int to double
-OP___(i2f,      Op1,  F,    1)  // convert int to float
-OP___(ui2d,     Op1,  D,    1)  // convert unsigned int to double
-OP___(ui2f,     Op1,  F,    1)  // convert unsigned int to float
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| dlo2i|     Op1|   I|  SF   | get the low  32 bits of a double as an int |
+| dhi2i|     Op1|   I|  SF   | get the high 32 bits of a double as an int |
+| ii2d|      Op2|   D|  SF   | join two ints (1st arg is low bits, 2nd is high) |
+| hcalli|    Op1|   I|  SF  | LIR_hcalli is a hack that's only used on 32-bit platforms that use SoftFloat.  Its operand is always a LIR_calli, but one that specifies a function that returns a double.  It indicates that the double result is returned via two 32-bit integer registers.  The result is always used as the second operand of a LIR_ii2d. |
 
-OP___(f2d,      Op1,  D,    1)  // convert float to double
 
-// rounding behavior of LIR_d2f is platform-specific
-//
-// Platform     Asm code        Behavior
-// --------     --------        --------
-// x86 w/ x87   FST32           uses current FP control word (default is rounding)
-// x86 w/ SSE   cvtsd2ss        according to MXCSR register (default is round to nearest)
-// x64 (SSE)    cvtsd2ss        according to MXCSR register (default is round to nearest)
-// others       not implemented yet
-OP___(d2f,      Op1,  F,    1)  // convert double to float (no exceptions raised)
+## Safepoint Polling
 
-// The rounding behavior of LIR_d2i is platform specific.
-//
-// Platform     Asm code        Behavior
-// --------     --------        --------
-// x86 w/ x87   fist            uses current FP control word (default is rounding)
-// x86 w/ SSE   cvttsd2si       performs round to zero (truncate)
-// x64 (SSE)    cvttsd2si       performs round to zero (truncate) 
-// PowerPC                      unsupported
-// ARM          ftosid          round to nearest
-// MIPS         trunc.w.d       performs round to zero (truncate)
-// SH4          frtc            performs round to zero (truncate)
-// SPARC        fdtoi           performs round to zero (truncate)
-//
-// round to zero examples:  1.9 -> 1, 1.1 -> 1, -1.1 -> -1, -1.9 -> -1
-// round to nearest examples: 1.9 -> 2, 1.1 -> 1, -1.1 -> -1, -1.9 -> -2
-OP___(d2i,      Op1,  I,    1)  // convert double to int (no exceptions raised)
-OP___(f2i,      Op1,  I,    1)  // convert float to int (no exceptions raised)
-
-OP___(f2f4,     Op1, F4,    1)  // convert float to float4 (no exceptions raised) - essentially copies the float across all elements
-OP___(ffff2f4,  Op4, F4,    1)  // convert float to float4 (no exceptions raised) - essentially copies the float across all elements
-OP___(f4x,      Op1,  F,    1)  // extract first float from a float4 
-OP___(f4y,      Op1,  F,    1)  // extract second float from a float4 
-OP___(f4z,      Op1,  F,    1)  // extract third float from a float4 
-OP___(f4w,      Op1,  F,    1)  // extract fourth float from a float4 
-OP___(swzf4,    Op1b,F4,    1)  // swizzle float4 according to 8-bit selector
-
-OP_64(dasq,     Op1,  Q,    1)  // interpret the bits of a double as a quad
-OP_64(qasd,     Op1,  D,    1)  // interpret the bits of a quad as a double
-
-//---------------------------------------------------------------------------
-// Overflow arithmetic
-//---------------------------------------------------------------------------
-// These all exit if overflow occurred.  The result is valid on either path.
-OP___(addxovi,  Op3,  I,    1)  // add int and exit on overflow
-OP___(subxovi,  Op3,  I,    1)  // subtract int and exit on overflow
-OP___(mulxovi,  Op3,  I,    1)  // multiply int and exit on overflow
-
-// These all branch if overflow occurred.  The result is valid on either path.
-OP___(addjovi,  Op3,  I,    1)  // add int and branch on overflow
-OP___(subjovi,  Op3,  I,    1)  // subtract int and branch on overflow
-OP___(muljovi,  Op3,  I,    1)  // multiply int and branch on overflow
-
-OP_64(addjovq,  Op3,  Q,    1)  // add quad and branch on overflow
-OP_64(subjovq,  Op3,  Q,    1)  // subtract quad and branch on overflow
-
-//---------------------------------------------------------------------------
-// SoftFloat
-//---------------------------------------------------------------------------
-OP_SF(dlo2i,    Op1,  I,    1)  // get the low  32 bits of a double as an int
-OP_SF(dhi2i,    Op1,  I,    1)  // get the high 32 bits of a double as an int
-OP_SF(ii2d,     Op2,  D,    1)  // join two ints (1st arg is low bits, 2nd is high)
-
-// LIR_hcalli is a hack that's only used on 32-bit platforms that use
-// SoftFloat.  Its operand is always a LIR_calli, but one that specifies a
-// function that returns a double.  It indicates that the double result is
-// returned via two 32-bit integer registers.  The result is always used as the
-// second operand of a LIR_ii2d.
-OP_SF(hcalli,   Op1,  I,    1)
-
-//---------------------------------------------------------------------------
-// Safepoint Polling
-//---------------------------------------------------------------------------
-OP___(memfence, Op0, V, 0)
-OP___(brsavpc, Op2, V, 0)        // branch and save pc
-OP___(restorepc, Op0, V, 0)
-OP___(pushstate, Op0, V, 0)
-OP___(popstate, Op0, V, 0)
+| Opcode | Todo | Return Type | Featured | Description |
+| --- | --- | --- | --- | --- |
+| memfence|  Op0|  V|  | |
+| brsavpc|  Op2|  V|  | branch and save pc |
+| restorepc|  Op0|  V|  | |
+| pushstate|  Op0|  V|  | |
+| popstate|  Op0|  V|  | |
