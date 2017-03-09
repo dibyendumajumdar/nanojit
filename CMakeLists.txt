@@ -4,57 +4,64 @@ project(lirasm)
 enable_language(CXX)
 enable_language(C)
 
-if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  add_definitions(
-    -DAVMPLUS_IA32
+message(STATUS "OS type is ${CMAKE_SYSTEM_NAME}")
+message(STATUS "System processor is ${CMAKE_HOST_SYSTEM_PROCESSOR}")
+message(STATUS "Build type is ${CMAKE_BUILD_TYPE}")
+
+if(CMAKE_SYSTEM_NAME STREQUAL Linux)
+  add_definitions (
+    -DAVMPLUS_UNIX=1
+    -DAVMPLUS_LINUX=1
   )
-else(CMAKE_SIZEOF_VOID_P EQUAL 8)
+elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+  add_definitions (
+    -DAVMPLUS_UNIX=1
+  )    
+elseif(CMAKE_SYSTEM_NAME STREQUAL Windows)
+  add_definitions (
+    -DAVMPLUS_WIN32=1
+  )
+else()
+  message(FATAL_ERROR "The build only supports Windows, Mac OSX and Linux currently")
+endif()
+
+if(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL X86_64 OR CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL AMD64)
   add_definitions(
     -DAVMPLUS_64BIT=1
     -DAVMPLUS_AMD64=1
+    -DVMCFG_SSE2=1
   )
+  set (NANOJIT_ARCH X64)
+elseif(CMAKE_HOST_SYSTEM_PROCESSOR STREQUAL I686)
+  add_definitions(
+    -DAVMPLUS_IA32
+    -DVMCFG_SSE2=1
+  )
+  set (NANOJIT_ARCH i386)  
+else()
+  message(FATAL_ERROR "The build only supports AMD64 and I386 currently")
 endif()
 
-set (NANOJIT_ARCH X64)
 add_definitions (
-	-DAVMPLUS_WIN32=1
-	-DFEATURE_NANOJIT=1
-	-DVMCFG_SSE2=1
-	)
+  -DFEATURE_NANOJIT=1
+)
 
-#if (CMAKE_BUILD_TYPE MATCHES DEBUG)
+if (CMAKE_BUILD_TYPE)
+  string(TOUPPER ${CMAKE_BUILD_TYPE} UPPERCASE_CMAKE_BUILD_TYPE)
+
+  if (UPPERCASE_CMAKE_BUILD_TYPE STREQUAL DEBUG)
     add_definitions(
-    	-DDEBUG=1 
-    	-D_DEBUG=1 
-    	-DNJ_VERBOSE=1)
-#endif()
-
-#undef DEBUG
-#undef AVMPLUS_AMD64
-#undef AVMPLUS_64BIT
-#undef AVMPLUS_ARM
-#undef AVMPLUS_IA32
-#undef AVMPLUS_LINUX
-#undef AVMPLUS_OS2
-#undef AVMPLUS_PPC
-#undef AVMPLUS_MIPS
-#undef VMCFG_SH4
-#undef VMCFG_FLOAT
-#undef VMCFG_NEON
-#undef AVMPLUS_SPARC
-#undef SOLARIS
-#undef AVMPLUS_UNIX
-#undef WINVER
-#undef _CRT_NONSTDC_NO_DEPRECATE
-#undef _CRT_NONSTDC_NO_WARNINGS
-#undef _CRT_SECURE_NO_DEPRECATE
-#undef _CRT_SECURE_NO_WARNINGS
-#undef WIN32
-#undef _WIN32_IE
-#undef _WIN32_WINNT
+      -D_DEBUG=1 
+      -DDEBUG=1 
+      -DAVMPLUS_VERBOSE=1
+    )
+  endif()
+else()
+  message(FATAL_ERROR "Unknown build type! Set CMAKE_BUILD_TYPE to DEBUG, CHECKED, RELEASE, or RELWITHDEBINFO!")
+endif()
 
 include_directories(
-    .
+    ${CMAKE_CURRENT_SOURCE_DIR}
     utils/nanojit-lirasm/VMPI.nj        
     nanojit
 )
