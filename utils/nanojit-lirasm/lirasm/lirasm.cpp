@@ -2999,6 +2999,7 @@ main(int argc, char **argv)
         if (i == lasm.mFragments.end())
             errMsgAndQuit(opts.progname, "error: at least one fragment must be named 'main'");
         executeFragment(i->second, opts.stkskip);
+		cout << "Execution completed\n";
     } else {
         for (i = lasm.mFragments.begin(); i != lasm.mFragments.end(); i++)
             dump_srecords(cout, i->second.fragptr);
