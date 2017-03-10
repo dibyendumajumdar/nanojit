@@ -93,3 +93,6 @@ target_link_libraries(nanojit ${EXTRA_LIBS})
 
 add_executable(lirasm ${LIRASM_SRCS})
 target_link_libraries(lirasm nanojit)
+
+add_executable(example1 samples/example1.cpp samples/spi.cpp)
+target_link_libraries(example1 nanojit)
