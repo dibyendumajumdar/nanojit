@@ -5,6 +5,11 @@
 using namespace nanojit;
 using namespace std;
 
+// We lump everything into a single access region for lirasm.
+static const AccSet ACCSET_OTHER = (1 << 0);
+static const uint8_t LIRASM_NUM_USED_ACCS = 1;
+
+
 #ifdef AVMPLUS_ARM
 float4_t vsqrtq_f32( float4_t q_x )
 {
@@ -76,10 +81,6 @@ nanojit::StackFilter::getTop(LIns*)
 {
     return 0;
 }
-
-// We lump everything into a single access region for lirasm.
-static const AccSet ACCSET_OTHER = (1 << 0);
-static const uint8_t LIRASM_NUM_USED_ACCS = 1;
 
 #if defined NJ_VERBOSE
 void
