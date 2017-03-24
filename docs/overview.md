@@ -7,9 +7,8 @@ This document is based upon the [Mozilla article](https://developer.mozilla.org/
 ## LIR
 The nanojit/LIR.cpp and nanojit/LIR.h files define the intermediate representation LIR, which is used as input to nanojit. LIR is a conventional three-address, linear code. It is similar to SSA but not exactly so as it lacks phi nodes. A single instruction of LIR is called a LIns, short for "LIR instruction". The LIns values are inserted into a LIR buffer, itself contained within a logical fragment, and the nanojit compilation pipeline and Assembler transforms the LIns values into NIns values (i.e. machine code).
 
-## Fragmento
-The nanojit/Fragment.cpp and nanojit/Fragmento.cpp files define the Fragment and Fragmento classes. A Fragmento is a resource-management object that allocates and stores a set of Fragments and Pages, and manages their lifecycle. A Fragmento owns its associated Fragments.
-A Fragment represents a single linear code sequence, typically terminating in a jump to another Fragment or back to the beginning of the Fragment. A Fragment's code is stored in a set of associated Pages and GuardRecords allocated from the Fragment's owning Fragmento. A Fragment initially holds no pages. As the compilation pipeline inserts LIR instructions (LIns values) into the Fragment, it allocates Pages to store the LIR code. Later, when the Fragment is assembled, it will allocate Pages for the native code (NIns values) produced by the Assembler. When the Fragment is destroyed, it returns its Pages to the Fragmento for reuse.
+## Fragment
+A Fragment represents a single linear code sequence, typically terminating in a jump to another Fragment or back to the beginning of the Fragment. 
 
 ## Assembler
 The nanojit/Assembler.cpp and nanojit/Assembler.h files define the class Assembler, which transforms LIns values into NIns values. In other words, an Assembler transforms LIR code into native code. An Assembler is also able to modify existing fragments of native code, by rewriting native jump instructions to jump to new locations. In this way the Assembler can "patch together" multiple fragments, so that program control can flow from one fragment into another, or back out of generated code and into the interpreter.
