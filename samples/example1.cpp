@@ -200,11 +200,15 @@ public:
 
 	/**
 	* Adds a function parameter - the parameter size is always the
-	* default register size I thunk - so on a 64-bit machine it will be
-	* quads. That means that only primitive values and pointers can be
-	* used as parameters.
+	* default register size I think - so on a 64-bit machine it will be
+	* quads whereas on 32-bit machines it will be words. Caller must
+	* handle this and convert to type needed.
+	* This also means that only primitive values and pointers can be 
+	* used as function parameters.
 	*/
-	LIns *insertParameter() { return lir_->insParam(paramCount_++, 0); }
+	LIns *insertParameter() { 
+		return lir_->insParam(paramCount_++, 0); 
+	}
 
 	/**
 	* Integer add
