@@ -3,7 +3,7 @@ Nanojit is a small, cross-platform C++ library that emits machine code. It is pa
 and used to be part of [Mozilla SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Internals/Tracing_JIT) but is no longer used in SpiderMonkey.
 
 ## High level overview
-Nanojit defines its own linear IR caled LIR. This is not an SSA IR as there are no phi nodes. Compared with LLVM IR, the Nanojit IR is low level. There are only primitive types such as 32-bit and 64-bit integers, doubles and floats, and pointers. Users have to manage complex types on their own.
+Nanojit defines its own linear IR called LIR. This is not an SSA IR as there are no phi nodes. Compared with LLVM IR, the Nanojit IR is low level. There are only primitive types such as 32-bit and 64-bit integers, doubles and floats, and pointers. Users have to manage complex types on their own.
 
 The Nanojit IR is also restricted by platform, e.g. some instructions are only available on 64-bit platforms. 
 
