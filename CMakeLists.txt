@@ -67,6 +67,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     utils/nanojit-lirasm/VMPI.nj        
     nanojit
+    nanojitextra
 )
 
 set (NATIVE_SRC
@@ -86,13 +87,20 @@ set (LIB_SRCS
         vprof/vprof.cpp
         AVMPI/float4Support.cpp
     )
+set (EXT_SRCS
+        nanojitextra/spi.cpp
+        nanojitextra/context.cpp)
+
 set (LIRASM_SRCS utils/nanojit-lirasm/lirasm/lirasm.cpp)
 
 add_library(nanojit ${LIB_SRCS} ${NATIVE_SRC})
 target_link_libraries(nanojit ${EXTRA_LIBS})
 
+add_library(nanojitextra ${LIB_SRCS} ${NATIVE_SRC} ${EXT_SRCS})
+target_link_libraries(nanojitextra ${EXTRA_LIBS})
+
 add_executable(lirasm ${LIRASM_SRCS})
 target_link_libraries(lirasm nanojit)
 
-add_executable(example1 samples/context.cpp samples/example1.cpp samples/spi.cpp)
-target_link_libraries(example1 nanojit)
+add_executable(example1 samples/example1.cpp)
+target_link_libraries(example1 nanojitextra)

@@ -1,12 +1,8 @@
-#include "context.h"
-
-#include <nanojit.h>
+#include <nanojitextra.h>
 
 #include <string>
 #include <map>
 #include <iostream>
-
-using namespace nanojit;
 
 namespace nanojit {
 

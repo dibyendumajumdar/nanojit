@@ -1,5 +1,5 @@
-#ifndef __nanojit_context__
-#define __nanojit_context__
+#ifndef __nanojit_extra__
+#define __nanojit_extra__
 
 #include <nanojit.h>
 
