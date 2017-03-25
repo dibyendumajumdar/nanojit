@@ -15,7 +15,7 @@ The documentation on Nanojit is sparse or non-existent, making it hard to get st
 
 ## Playing with Nanojit
 
-Nanojit comes with a nice tool called lirasm. This is a command line tool that allows you to run a script containing Nanojit IR instructions. For exampl, say you want a function that adds its two arguments. We can write this as follows:
+Nanojit comes with a nice tool called lirasm. This is a command line tool that allows you to run a script containing Nanojit IR instructions. For example, say you want a function that adds its two arguments. We can write this as follows:
 
 ```
 ; this is our add function
