@@ -1,13 +1,22 @@
 # nanojit
 Nanojit is a small, cross-platform C++ library that emits machine code. It is part of [Adobe ActionScript](https://github.com/adobe/avmplus) 
-and [Mozilla SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Internals/Tracing_JIT).
+and used to be part of [Mozilla SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Internals/Tracing_JIT) but is no longer used in SpiderMonkey.
+
+## High level overview
+Nanojit defines its own linear IR caled LIR. This is not an SSA IR as there are no phi nodes. Compared with LLVM IR, the Nanojit IR is low level. There are only primitive types such as 32-bit and 64-bit integers, doubles and floats, and pointers. Users have to manage complex types on their own.
+
+The Nanojit IR is also restricted by platform, e.g. some instructions are only available on 64-bit platforms. 
+
+The main unit of compilation in Nanojit is a Fragment - which can be thought of as a chunk of code. You can make a function out of a fragment by providing a start instruction and appropriate ret instructions. But Fragments need not be functions. I believe this flexibility stems from the fact that Nanojit was designed to be used in a tracing JIT.
+
+A limitation (or complexity) in Nanojit is that function parameters are always the architecture word size, i.e. 64-bit on 64-bit platforms, and 32-bit on 32-bit platforms. This means that you cannot directly pass a double as a parameter on a 32-bit platform! However the workaround is simple, just pass a pointer to a struct that contains the arguments. Of course Nanojit does not understand structs so you need to call the relevant memory load/store operations.
+
+The documentation on Nanojit is sparse or non-existent, making it hard to get started. I hope to provide a simpler, documented api to make it easier to use Nanojit.
 
 ## Standalone Build
-The goal of this project is to create a standalone build of Nanojit. The original folder structure of avmplus is maintained so that merging 
-upstream changes is easier. 
+The goal of this project is to create a standalone build of Nanojit. The original folder structure of avmplus is maintained so that merging upstream changes is easier. 
 
-The new build is work in progress. A very early version of CMakeLists.txt is available, this has been tested only on Windows 10 with Visual Studio 2017.
-The aim is to support the build on X86_64 processors, and Windows, Linux and Mac OSX.  
+The new build is work in progress. A very early version of CMakeLists.txt is available, this has been tested only on Windows 10 with Visual Studio 2017. The aim is to initially support the build on X86_64 processors, and Windows, Linux and Mac OSX.  
 
 To create Visual Studio project files do following:
 
@@ -22,6 +31,9 @@ code snippets.
 
 ## Documentation
 A secondary goal of this project is to create some documentation of the standalone library, and document how it can be used. 
+
+* [Main Components in NanoJIT](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/overview.md)
+* [LIR op codes](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/nanjit-opcodes.md)
 
 ## Why nanojit?
 It seems that this is perhaps the only small JIT library that is available. 
