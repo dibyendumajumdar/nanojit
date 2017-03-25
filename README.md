@@ -23,11 +23,17 @@ Nanojit comes with a nice tool called lirasm. This is a command line tool that a
 ; and returns the sum of the two
 ; note that this script will only run on 64-bit platforms as q2i instruction is
 ; not available on 32-bit platforms
+
+; the .begin and .end instructions tell lirasm to generate the function prologue and epilogue
+
 .begin add
-p1 = paramp 0 0		     ; parameter 1, the second argument '0' says this is a parameter
-p2 = paramp 1 0		     ; parameter 2
-x  = q2i p1	           ; convert from int64 to int32
-y  = q2i p2		         ; convert from int64 to int32
+p1 = paramp 0 0		     ; the first '0' says that this is the 0th parameter 
+                       ; the second argument '0' says this is a parameter
+p2 = paramp 1 0		     ; the second parameter
+x  = q2i p1            ; convert from int64 to int32
+                       ; this instruction will only work on 64-bit machines
+                       ; it ensures that the script will fail to compile on 32-bit arch
+y  = q2i p2            ; convert from int64 to int32
 sum = addi x y	       ; add
 reti sum
 .end
@@ -55,7 +61,7 @@ lirasm -v add.in
 ```
 
 ## Building Nanojit
-The goal of this project is to create a standalone build of Nanojit. The original folder structure of avmplus is maintained so that merging upstream changes is easier. 
+While the goal of this project is to create a standalone build of Nanojit, the original folder structure of avmplus is maintained so that merging upstream changes is easier.
 
 The new build is work in progress. A very early version of CMakeLists.txt is available, this has been tested only on Windows 10 with Visual Studio 2017. The aim is to initially support the build on X86_64 processors, and Windows, Linux and Mac OSX.  
 
@@ -67,8 +73,7 @@ cd build
 cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
-Building the project will result in a standalone nanojit library and the executable lirasm which can be used to assemble and run standalone
-code snippets. 
+Building the project will result in a standalone nanojit and naojitextra libraries, and the executable lirasm which can be used to assemble and run standalone code snippets as described above. 
 
 ## Documentation
 A secondary goal of this project is to create some documentation of the standalone library, and document how it can be used. 
