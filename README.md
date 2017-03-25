@@ -13,7 +13,48 @@ A limitation (or complexity) in Nanojit is that function parameters are always t
 
 The documentation on Nanojit is sparse or non-existent, making it hard to get started. I hope to provide a simpler, documented api to make it easier to use Nanojit.
 
-## Standalone Build
+## Playing with Nanojit
+
+Nanojit comes with a nice tool called lirasm. This is a command line tool that allows you to run a script containing Nanojit IR instructions. For exampl, say you want a function that adds its two arguments. We can write this as follows:
+
+```
+; this is our add function
+; it takes two parameters
+; and returns the sum of the two
+; note that this script will only run on 64-bit platforms as q2i instruction is
+; not available on 32-bit platforms
+.begin add
+p1 = paramp 0 0		     ; parameter 1, the second argument '0' says this is a parameter
+p2 = paramp 1 0		     ; parameter 2
+x  = q2i p1	           ; convert from int64 to int32
+y  = q2i p2		         ; convert from int64 to int32
+sum = addi x y	       ; add
+reti sum
+.end
+
+; this is our main function
+; we just call add with 200, 100
+.begin main
+oneh = immi 100		     ; constant 100
+twoh = immi 200		     ; constant 200
+res = calli add fastcall twoh oneh     ; call function add
+reti res
+.end
+```
+
+If you save above script to a file named add.in, then you can run lirasm as follows:
+
+```
+lirasm add.in
+```
+
+You can see the generated code by running:
+
+```
+lirasm -v add.in
+```
+
+## Building Nanojit
 The goal of this project is to create a standalone build of Nanojit. The original folder structure of avmplus is maintained so that merging upstream changes is easier. 
 
 The new build is work in progress. A very early version of CMakeLists.txt is available, this has been tested only on Windows 10 with Visual Studio 2017. The aim is to initially support the build on X86_64 processors, and Windows, Linux and Mac OSX.  
