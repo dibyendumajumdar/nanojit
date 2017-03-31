@@ -6,14 +6,18 @@
 
 namespace nanojit {
 
+	enum ReturnType {
+		RT_INT = 1,
+		RT_QUAD = 2,
+		RT_DOUBLE = 4,
+	};
+
 	// We lump everything into a single access region for lirasm.
 	static const AccSet ACCSET_OTHER = (1 << 0);
 	static const uint8_t LIRASM_NUM_USED_ACCS = 1;
 
 	typedef int32_t(FASTCALL *RetInt)();
-#ifdef NANOJIT_64BIT
 	typedef int64_t(FASTCALL *RetQuad)();
-#endif
 	typedef double (FASTCALL *RetDouble)();
 
 	struct Function {
@@ -25,9 +29,7 @@ namespace nanojit {
 	public:
 		union {
 			RetInt rint;
-#ifdef NANOJIT_64BIT
 			RetQuad rquad;
-#endif
 			RetDouble rdouble;
 		};
 		ReturnType mReturnType;
@@ -179,9 +181,19 @@ namespace nanojit {
 		~FunctionBuilderImpl();
 
 		/**
-		* Adds a ret instruction.
+		* Adds an integer return instruction.
 		*/
-		LIns *ret(ReturnType rt, LIns *result);
+		LIns *reti(LIns *result);
+
+		/**
+		* Adds a double return instruction.
+		*/
+		LIns *retd(LIns *result);
+
+		/**
+		* Adds a quad return instruction.
+		*/
+		LIns *retq(LIns *result);
 
 		/**
 		* Creates an int32 constant
@@ -254,9 +266,19 @@ namespace nanojit {
 	}
 
 	/**
-	* Adds a ret instruction.
+	* Adds an integer return instruction.
 	*/
-	LIns *FunctionBuilder::ret(ReturnType rt, LIns *result) { return impl_->ret(rt, result); }
+	LIns *FunctionBuilder::reti(LIns *result) { return impl_->reti(result); }
+
+	/**
+	* Adds a double return instruction.
+	*/
+	LIns *FunctionBuilder::retd(LIns *result) { return impl_->retd(result); }
+
+	/**
+	* Adds a quad return instruction.
+	*/
+	LIns *FunctionBuilder::retq(LIns *result) { return impl_->retq(result); }
 
 	/**
 	* Creates an int32 constant
@@ -381,28 +403,26 @@ namespace nanojit {
 	}
 
 	LIns *
-		FunctionBuilderImpl::ret(ReturnType rt, LIns *result)
+		FunctionBuilderImpl::reti(LIns *result)
 	{
-		returnTypeBits_ |= rt;
-		LOpcode opcode;
-		switch (rt) {
-		case RT_DOUBLE:
-			opcode = LIR_retd;
-			break;
-#ifdef NANOJIT_64BIT
-		case RT_QUAD:
-			opcode = LIR_retq;
-			break;
-#endif
-		case RT_INT:
-			opcode = LIR_reti;
-			break;
-		default:
-			assert(0);
-			opcode = LIR_reti;
-		}
-		return lir_->ins1(opcode, result);
+		returnTypeBits_ |= ReturnType::RT_INT;
+		return lir_->ins1(LIR_reti, result);
 	}
+
+	LIns *
+		FunctionBuilderImpl::retd(LIns *result)
+	{
+		returnTypeBits_ |= ReturnType::RT_DOUBLE;
+		return lir_->ins1(LIR_retd, result);
+	}
+
+	LIns *
+		FunctionBuilderImpl::retq(LIns *result)
+	{
+		returnTypeBits_ |= ReturnType::RT_QUAD;
+		return lir_->ins1(LIR_retq, result);
+	}
+
 
 	SideExit*
 		FunctionBuilderImpl::createSideExit()
@@ -433,13 +453,12 @@ namespace nanojit {
 
 		}
 		else if (returnTypeBits_ != RT_INT &&
-#ifdef NANOJIT_64BIT
 			returnTypeBits_ != RT_QUAD &&
-#endif
 			returnTypeBits_ != RT_DOUBLE)
 		{
 			std::cerr << "warning: multiple return types in fragment '"
 				<< fragName_ << "'" << std::endl;
+			return nullptr;
 		}
 
 		fragment_->lastIns =
@@ -469,13 +488,11 @@ namespace nanojit {
 			f->rint = (RetInt)((uintptr_t)fragment_->code());
 			f->mReturnType = RT_INT;
 			return f->rint;
-#ifdef NANOJIT_64BIT
 		case RT_QUAD:
 			f->rquad = (RetQuad)((uintptr_t)fragment_->code());
 			f->mReturnType = RT_QUAD;
 			return f->rquad;
 			break;
-#endif
 		case RT_DOUBLE:
 			f->rdouble = (RetDouble)((uintptr_t)fragment_->code());
 			f->mReturnType = RT_DOUBLE;

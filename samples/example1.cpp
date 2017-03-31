@@ -16,13 +16,13 @@ int simplest(NanoJitContext &jit)
 	std::string name = "simplest";
 	typedef int (*functype)(void);
 
-	// Create a fragment assembler - we can treat a fragment as a function
-	FunctionBuilder fragment(jit, name, true);
+	// Create a function builder
+	FunctionBuilder builder(jit, name, true);
 
-	auto zero = fragment.immi(0);
-	auto ret = fragment.ret(RT_INT, zero);
+	auto zero = builder.immi(0);
+	auto ret = builder.reti(zero);
 
-	functype f = (functype) fragment.finalize();
+	functype f = (functype) builder.finalize();
 
 	if (f != nullptr)
 		return f();
@@ -38,16 +38,16 @@ int add2(NanoJitContext  &jit)
 	std::string name = "add2";
 	typedef int(*functype)(int);
 
-	// Create a fragment assembler - we can treat a fragment as a function
-	FunctionBuilder fragment(jit, name, true);
+	// Create a function builder
+	FunctionBuilder builder(jit, name, true);
 
-	auto two = fragment.immi(2); /* 2 */
-	auto param1 = fragment.insertParameter(); /* arg1 */
-	param1 = fragment.q2i(param1); /* (int) arg1 */
-	auto result = fragment.addi(param1, two); /* add */
-	auto ret = fragment.ret(RT_INT, result); /* return result */
+	auto two = builder.immi(2);                /* 2 */
+	auto param1 = builder.insertParameter();   /* arg1 */
+	param1 = builder.q2i(param1);              /* (int) arg1 */
+	auto result = builder.addi(param1, two);   /* add */
+	auto ret = builder.reti(result);           /* return result */
 
-	functype f = (functype)fragment.finalize();
+	functype f = (functype)builder.finalize();
 
 	if (f != nullptr)
 		return f(5) == 7 ? 0 : 1;
