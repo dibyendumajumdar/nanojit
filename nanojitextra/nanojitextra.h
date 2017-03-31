@@ -3,6 +3,8 @@
 
 #include <nanojit.h>
 
+#include <stdint.h>
+
 #include <string>
 
 #ifndef NANOJIT_64BIT
@@ -13,6 +15,8 @@ namespace nanojit {
 
 	class NanoJitContextImpl;
 	class FunctionBuilderImpl;
+
+	typedef int64_t parameter_type;
 
 	/**
 	* The Jit Context defines a container for the Jit machinery and
