@@ -60,6 +60,31 @@ You can see the generated code by running:
 lirasm -v add.in
 ```
 
+## Example using NanoJitExtra api
+This project is creating a simplified API for nanojit - we call this nanjitexra. The API is defined in [nanojitextra.h](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h). *Note* that this is work in progress.
+
+```c++
+
+NanoJitContext jit(true);
+
+typedef int(*functype)(parameter_type, parameter_type);
+
+// Create a function builder
+FunctionBuilder builder(jit, "add", true /*optimize*/);
+
+auto param1 = builder.insertParameter();   /* arg1 */
+auto param2 = builder.insertParameter();   /* arg2 */
+auto x = builder.q2i(param1);              /* x = (int) arg1 */
+auto y = builder.q2i(param2);              /* y = (int) arg2 */
+auto result = builder.addi(x, y);          /* result = x = y */
+auto ret = builder.reti(result);           /* return result */
+
+functype f = (functype)builder.finalize();
+
+assert(f);
+assert(f(100, 200) == 300);
+```
+
 ## Building Nanojit
 While the goal of this project is to create a standalone build of Nanojit, the original folder structure of avmplus is maintained so that merging upstream changes is easier.
 
