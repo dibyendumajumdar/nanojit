@@ -1,8 +1,13 @@
 #include <nanojitextra.h>
+#include <nanojit.h>
 
 #include <string>
 #include <map>
 #include <iostream>
+
+#ifndef NANOJIT_64BIT
+#error This code is only supported on 64-bit architecture
+#endif
 
 namespace nanojit {
 

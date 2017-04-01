@@ -1,17 +1,12 @@
 #ifndef __nanojit_extra__
 #define __nanojit_extra__
 
-#include <nanojit.h>
-
 #include <stdint.h>
-
 #include <string>
 
-#ifndef NANOJIT_64BIT
-#error This code is only supported on 64-bit architecture
-#endif
-
 namespace nanojit {
+
+	class LIns;
 
 	class NanoJitContextImpl;
 	class FunctionBuilderImpl;
