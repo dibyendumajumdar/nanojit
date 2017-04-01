@@ -60,8 +60,8 @@ You can see the generated code by running:
 lirasm -v add.in
 ```
 
-## Example using NanoJitExtra api
-This project is creating a simplified API for nanojit - we call this nanjitexra. The API is defined in [nanojitextra.h](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h). *Note* that this is work in progress.
+## Example using NanoJitExtra API
+This project is creating a simplified API for nanojit - we call this nanojitexra. The API is defined in [nanojitextra.h](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h). *Note* that this is work in progress.
 
 ```c++
 
