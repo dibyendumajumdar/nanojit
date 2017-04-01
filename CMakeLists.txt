@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(lirasm)
+project(nanojitextra)
 
 enable_language(CXX)
 enable_language(C)
@@ -93,6 +93,8 @@ set (EXT_SRCS
 
 set (LIRASM_SRCS utils/nanojit-lirasm/lirasm/lirasm.cpp)
 
+set (NANOJITEXTRA_HEADERS nanojitextra/nanojitextra.h)
+
 add_library(nanojit ${LIB_SRCS} ${NATIVE_SRC})
 target_link_libraries(nanojit ${EXTRA_LIBS})
 
@@ -104,3 +106,10 @@ target_link_libraries(lirasm nanojit)
 
 add_executable(example1 samples/example1.cpp)
 target_link_libraries(example1 nanojitextra)
+
+install(FILES ${NANOJITEXTRA_HEADERS}
+        DESTINATION include/nanojit)
+install(TARGETS nanojitextra lirasm
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
