@@ -77,7 +77,7 @@ auto param1 = NJX_insert_parameter(builder); /* arg1 */
 auto param2 = NJX_insert_parameter(builder); /* arg2 */
 auto x = NJX_q2i(builder, param1);           /* x = (int) arg1 */
 auto y = NJX_q2i(builder, param2);           /* y = (int) arg2 */
-auto result = NJX_addi(builder, x, y);       /* result = x = y */
+auto result = NJX_addi(builder, x, y);       /* result = x + y */
 auto ret = NJX_reti(builder, result);        /* return result */
 
 functype f = (functype)NJX_finalize(builder);
