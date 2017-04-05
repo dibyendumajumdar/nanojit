@@ -61,28 +61,34 @@ lirasm -v add.in
 ```
 
 ## Example using NanoJitExtra API
-This project is creating a simplified API for nanojit - we call this nanojitexra. The API is defined in [nanojitextra.h](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h). *Note* that this is work in progress.
+This project is creating a simplified C API for nanojit - we call this nanojitexra. The API is defined in [nanojitextra.h](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h). *Note* that this is work in progress.
 
 ```c++
 
-NanoJitContext jit(true);
+NJXContextRef jit = NJX_create_context(true);
 
-typedef int(*functype)(parameter_type, parameter_type);
+const char *name = "add";
+typedef int (*functype)(NJXParamType, NJXParamType);
 
 // Create a function builder
-FunctionBuilder builder(jit, "add", true /*optimize*/);
+NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
 
-auto param1 = builder.insertParameter();   /* arg1 */
-auto param2 = builder.insertParameter();   /* arg2 */
-auto x = builder.q2i(param1);              /* x = (int) arg1 */
-auto y = builder.q2i(param2);              /* y = (int) arg2 */
-auto result = builder.addi(x, y);          /* result = x = y */
-auto ret = builder.reti(result);           /* return result */
+auto param1 = NJX_insert_parameter(builder); /* arg1 */
+auto param2 = NJX_insert_parameter(builder); /* arg2 */
+auto x = NJX_q2i(builder, param1);           /* x = (int) arg1 */
+auto y = NJX_q2i(builder, param2);           /* y = (int) arg2 */
+auto result = NJX_addi(builder, x, y);       /* result = x = y */
+auto ret = NJX_reti(builder, result);        /* return result */
 
-functype f = (functype)builder.finalize();
+functype f = (functype)NJX_finalize(builder);
+
+NJX_destroy_function_builder(builder);
 
 assert(f);
 assert(f(100, 200) == 300);
+
+NJX_destroy_context(jit);
+
 ```
 
 ## Building Nanojit

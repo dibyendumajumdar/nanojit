@@ -2,94 +2,95 @@
 
 #include <stdint.h>
 
-#include <string>
-#include <map>
 #include <iostream>
-
-using namespace nanojit;
-
+#include <map>
+#include <string>
 
 /**
 * Compiles simplest function:
 * int simplest(void) { return 0; }
 */
-int simplest(NanoJitContext &jit)
-{
-	std::string name = "simplest";
-	typedef int (*functype)(void);
+int simplest(NJXContextRef jit) {
+  const char *name = "simplest";
+  typedef int (*functype)(void);
 
-	// Create a function builder
-	FunctionBuilder builder(jit, name, true);
+  // Create a function builder
+  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
 
-	auto zero = builder.immi(0);
-	auto ret = builder.reti(zero);
+  auto zero = NJX_immi(builder, 0);
+  auto ret = NJX_reti(builder, zero);
 
-	functype f = (functype) builder.finalize();
+  functype f = (functype)NJX_finalize(builder);
 
-	if (f != nullptr)
-		return f();
-	return 1;
+  NJX_destroy_function_builder(builder);
+
+  if (f != nullptr)
+    return f();
+  return 1;
 }
 
 /**
 * Compiles a function that adds 2 to given int value and returns result
 * int add2(int x) { return x+2; }
 */
-int add2(NanoJitContext  &jit)
-{
-	std::string name = "add2";
-	typedef int(*functype)(parameter_type);
+int add2(NJXContextRef jit) {
+  const char *name = "add2";
+  typedef int (*functype)(NJXParamType);
 
-	// Create a function builder
-	FunctionBuilder builder(jit, name, true);
+  // Create a function builder
+  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
 
-	auto two = builder.immi(2);                /* 2 */
-	auto param1 = builder.insertParameter();   /* arg1 */
-	param1 = builder.q2i(param1);              /* (int) arg1 */
-	auto result = builder.addi(param1, two);   /* add */
-	auto ret = builder.reti(result);           /* return result */
+  auto two = NJX_immi(builder, 2);              /* 2 */
+  auto param1 = NJX_insert_parameter(builder);  /* arg1 */
+  param1 = NJX_q2i(builder, param1);            /* (int) arg1 */
+  auto result = NJX_addi(builder, param1, two); /* add */
+  auto ret = NJX_reti(builder, result);         /* return result */
 
-	functype f = (functype)builder.finalize();
+  functype f = (functype)NJX_finalize(builder);
 
-	if (f != nullptr)
-		return f(5) == 7 ? 0 : 1;
-	return 1;
+  NJX_destroy_function_builder(builder);
+
+  if (f != nullptr)
+    return f(5) == 7 ? 0 : 1;
+  return 1;
 }
 
 /**
 * Tests a simple add function that takes two int values and returns their sum
 */
-int add(NanoJitContext &jit)
-{
-	std::string name = "add";
-	typedef int(*functype)(parameter_type, parameter_type);
+int add(NJXContextRef jit) {
+  const char *name = "add";
+  typedef int (*functype)(NJXParamType, NJXParamType);
 
-	// Create a function builder
-	FunctionBuilder builder(jit, name, true);
+  // Create a function builder
+  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
 
-	auto param1 = builder.insertParameter();   /* arg1 */
-	auto param2 = builder.insertParameter();   /* arg2 */
-	auto x = builder.q2i(param1);              /* x = (int) arg1 */
-	auto y = builder.q2i(param2);              /* y = (int) arg2 */
-	auto result = builder.addi(x, y);          /* result = x = y */
-	auto ret = builder.reti(result);           /* return result */
+  auto param1 = NJX_insert_parameter(builder); /* arg1 */
+  auto param2 = NJX_insert_parameter(builder); /* arg2 */
+  auto x = NJX_q2i(builder, param1);           /* x = (int) arg1 */
+  auto y = NJX_q2i(builder, param2);           /* y = (int) arg2 */
+  auto result = NJX_addi(builder, x, y);       /* result = x = y */
+  auto ret = NJX_reti(builder, result);        /* return result */
 
-	functype f = (functype)builder.finalize();
+  functype f = (functype)NJX_finalize(builder);
 
-	if (f != nullptr)
-		return f(100, 200) == 300 ? 0 : 1;
-	return 1;
+  NJX_destroy_function_builder(builder);
+
+  if (f != nullptr)
+    return f(100, 200) == 300 ? 0 : 1;
+  return 1;
 }
-
 
 int main(int argc, const char *argv[]) {
 
-	NanoJitContext jit(true);
+  NJXContextRef jit = NJX_create_context(true);
 
-	int rc = 0;
-	rc += simplest(jit);
-	rc += add2(jit);
-	rc += add(jit);
+  int rc = 0;
+  rc += simplest(jit);
+  rc += add2(jit);
+  rc += add(jit);
 
-	return rc;
+  NJX_destroy_context(jit);
+
+  return rc;
 }
