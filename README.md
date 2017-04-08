@@ -111,6 +111,11 @@ A secondary goal of this project is to create some documentation of the standalo
 
 * [Main Components in NanoJIT](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/overview.md)
 * [LIR op codes](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/nanjit-opcodes.md)
+* [Detailed Notes](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/details.md)
+
 
 ## Why nanojit?
 It seems that this is perhaps the only small JIT library that is available. 
+
+## Why not nanojit?
+Support is virtually non-existant. The original developer Edwin Smith is no longer at Adobe, and works for Facebook now as far as I can tell. But he is not involved with Nanojit anymore. The Adobe team do not seem to respond to issues. 
