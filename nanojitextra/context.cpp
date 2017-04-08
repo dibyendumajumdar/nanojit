@@ -193,6 +193,10 @@ public:
   */
   LIns *retq(LIns *result);
 
+  LIns *ret() {
+	  return lir_->ins0(LIR_x);
+  }
+
   /**
   * Creates an int32 constant
   */
@@ -219,9 +223,52 @@ public:
   LIns *insertParameter() { return lir_->insParam(paramCount_++, 0); }
 
   /**
-  * Integer add
+  * Insert a label at current position
   */
+  LIns *addLabel() { return lir_->ins0(LIR_label); }
+
+  /**
+  * Allocate size bytes on the stack 
+  */
+  LIns *allocA(int32_t size) { return lir_->insAlloc(size); }
+
+  /**
+  * Inserts an unconditional jump - to can be NULL and set later 
+  */
+  LIns *br(LIns *to) { return lir_->insBranch(LIR_j, NULL, to); }
+
+  /**
+  * Inserts a conditional branch - jump targets can be NULL and set later
+  */
+  LIns *cbrTrue(LIns *cond, LIns *to) { return lir_->insBranch(LIR_jt, cond, to); }
+  LIns *cbrFalse(LIns *cond, LIns *to) { return lir_->insBranch(LIR_jf, cond, to); }
+
+  LIns *loadc2i(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldc2i, ptr, offset, ACCSET_OTHER); }
+  LIns *loaduc2ui(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_lduc2ui, ptr, offset, ACCSET_OTHER); }
+  LIns *loads2i(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_lds2i, ptr, offset, ACCSET_OTHER); }
+  LIns *loadus2ui(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldus2ui, ptr, offset, ACCSET_OTHER); }
+  LIns *loadi(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldi, ptr, offset, ACCSET_OTHER); }
+  LIns *loadq(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldq, ptr, offset, ACCSET_OTHER); }
+  LIns *loadf(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldf, ptr, offset, ACCSET_OTHER); }
+  LIns *loadd(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldd, ptr, offset, ACCSET_OTHER); }
+  LIns *loadf2d(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldf2d, ptr, offset, ACCSET_OTHER); }
+
+  LIns *storei2c(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_sti2c, value, ptr, offset, ACCSET_OTHER); }
+  LIns *storei2s(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_sti2s, value, ptr, offset, ACCSET_OTHER); }
+  LIns *storei(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_sti, value, ptr, offset, ACCSET_OTHER); }
+  LIns *storeq(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_stq, value, ptr, offset, ACCSET_OTHER); }
+  LIns *stored(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_std, value, ptr, offset, ACCSET_OTHER); }
+  LIns *storef(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_stf, value, ptr, offset, ACCSET_OTHER); }
+
   LIns *addi(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_addi, lhs, rhs); }
+  LIns *addq(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_addq, lhs, rhs); }
+  LIns *addd(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_addd, lhs, rhs); }
+  LIns *addf(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_addf, lhs, rhs); }
+
+  LIns *eqi(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqi, lhs, rhs); }
+  LIns *eqq(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqq, lhs, rhs); }
+  LIns *eqd(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqd, lhs, rhs); }
+  LIns *eqf(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqf, lhs, rhs); }
 
   LIns *q2i(LIns *q) {
 #ifdef NANOJIT_64BIT
@@ -498,6 +545,11 @@ NJXLInsRef NJX_retq(NJXFunctionBuilderRef fn, NJXLInsRef result) {
   return wrap_ins(unwrap_function_builder(fn)->retq(unwrap_ins(result)));
 }
 
+NJXLInsRef NJX_ret(NJXFunctionBuilderRef fn) {
+	return wrap_ins(unwrap_function_builder(fn)->ret());
+}
+
+
 /**
 * Creates an int32 constant
 */
@@ -538,6 +590,38 @@ NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
       unwrap_function_builder(fn)->addi(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
+NJXLInsRef NJX_addq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->addq(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+
+NJXLInsRef NJX_addd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->addd(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+NJXLInsRef NJX_addf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->addf(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+
+NJXLInsRef NJX_eqi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->eqi(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+NJXLInsRef NJX_eqq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->eqq(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+
+NJXLInsRef NJX_eqd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->eqd(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->eqf(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+
 
 /**
 * Converts a quad to an int
@@ -545,6 +629,106 @@ NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
 NJXLInsRef NJX_q2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
   return wrap_ins(unwrap_function_builder(fn)->q2i(unwrap_ins(q)));
 }
+
+/**
+* Adds a lael, no code is emitted for this
+*/
+NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn) {
+  return wrap_ins(unwrap_function_builder(fn)->addLabel());
+}
+
+/**
+* Allocates 'size' bytes on the stack
+*/
+NJXLInsRef NJX_alloca(NJXFunctionBuilderRef fn, int32_t size) {
+	return wrap_ins(unwrap_function_builder(fn)->allocA(size));
+}
+
+/**
+* Inserts an unconditional jump - to can be NULL and set later
+*/
+NJXLInsRef NJX_br(NJXFunctionBuilderRef fn, NJXLInsRef to) {
+	return wrap_ins(unwrap_function_builder(fn)->br(unwrap_ins(to)));
+}
+
+/**
+* Inserts a conditional branch - jump targets can be NULL and set later
+*/
+NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->cbrTrue(unwrap_ins(cond), unwrap_ins((to))));
+}
+
+/**
+* Inserts a conditional branch - jump targets can be NULL and set later
+*/
+NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to) {
+	return wrap_ins(
+		unwrap_function_builder(fn)->cbrFalse(unwrap_ins(cond), unwrap_ins((to))));
+}
+
+NJXLInsRef NJX_load_c2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loadc2i(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_uc2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loaduc2ui(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_s2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loads2i(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_us2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loadus2ui(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loadi(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_q(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loadq(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_f(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loadf(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loadd(unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_load_f2d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->loadf2d(unwrap_ins(ptr), offset));
+}
+
+NJXLInsRef NJX_store_i2c(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->storei2c(unwrap_ins(value), unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_store_i2s(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->storei2s(unwrap_ins(value), unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_store_i(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->storei(unwrap_ins(value), unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_store_q(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->storeq(unwrap_ins(value), unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_store_d(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->stored(unwrap_ins(value), unwrap_ins(ptr), offset));
+}
+NJXLInsRef NJX_store_f(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
+	return wrap_ins(unwrap_function_builder(fn)->storef(unwrap_ins(value), unwrap_ins(ptr), offset));
+}
+
+bool NJX_is_i(NJXLInsRef ins) { return unwrap_ins(ins)->isI(); }
+bool NJX_is_q(NJXLInsRef ins) { return unwrap_ins(ins)->isQ(); }
+bool NJX_is_d(NJXLInsRef ins) { return unwrap_ins(ins)->isD(); }
+bool NJX_is_f(NJXLInsRef ins) { return unwrap_ins(ins)->isF(); }
+
+
+/**
+* Sets the target of a jump instruction
+*/
+void NJX_set_jmp_target(NJXLInsRef jmp, NJXLInsRef target) {
+	auto jmpins = unwrap_ins(jmp);
+	auto targetins = unwrap_ins(target);
+	jmpins->setTarget(targetins);
+}
+
 
 /**
 * Completes the function, and assembles the code.

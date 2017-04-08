@@ -2,7 +2,7 @@
 #define __nanojit_extra__
 
 #include <stdint.h>
-#include <string>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -76,6 +76,8 @@ extern NJXLInsRef NJX_retd(NJXFunctionBuilderRef fn, NJXLInsRef result);
 */
 extern NJXLInsRef NJX_retq(NJXFunctionBuilderRef fn, NJXLInsRef result);
 
+extern NJXLInsRef NJX_ret(NJXFunctionBuilderRef fn);
+
 /**
 * Creates an int32 constant
 */
@@ -105,11 +107,70 @@ extern NJXLInsRef NJX_insert_parameter(NJXFunctionBuilderRef fn);
 * Integer add
 */
 extern NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_addq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_addd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_addf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+
+extern NJXLInsRef NJX_eqi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_eqq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_eqd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
 
 /**
 * Converts a quad to an int
 */
 extern NJXLInsRef NJX_q2i(NJXFunctionBuilderRef fn, NJXLInsRef q);
+
+/**
+* Inserts a label at current position, no code is emitted for this
+*/
+extern NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn);
+
+/**
+* Allocates 'size' bytes on the stack
+*/
+extern NJXLInsRef NJX_alloca(NJXFunctionBuilderRef fn, int32_t size);
+
+/**
+* Inserts an unconditional jump - to can be NULL and set later
+*/
+extern NJXLInsRef NJX_br(NJXFunctionBuilderRef fn, NJXLInsRef to);
+
+/**
+* Inserts a conditional branch - jump targets can be NULL and set later
+*/
+extern NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to);
+extern NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to);
+
+/**
+* Sets the target of a jump instruction
+* target should be a label instruction
+* and jmp should be the jump instruction returned by NJX_br(), NJX_cbr_true() or NJX_cbr_false().
+*/
+extern void NJX_set_jmp_target(NJXLInsRef jmp, NJXLInsRef target);
+
+extern NJXLInsRef NJX_load_c2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_uc2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_s2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_us2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_q(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_f(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_f2d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+
+extern NJXLInsRef NJX_store_i2c(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_i2s(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_i(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_q(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_d(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_f(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
+
+extern bool NJX_is_i(NJXLInsRef ins);
+extern bool NJX_is_q(NJXLInsRef ins);
+extern bool NJX_is_d(NJXLInsRef ins);
+extern bool NJX_is_f(NJXLInsRef ins);
+
 
 /**
 * Completes the function, and assembles the code.
