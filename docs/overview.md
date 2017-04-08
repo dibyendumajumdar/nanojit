@@ -8,7 +8,7 @@ This document is based upon the [Mozilla article](https://developer.mozilla.org/
 The nanojit/LIR.cpp and nanojit/LIR.h files define the intermediate representation LIR, which is used as input to nanojit. LIR is a conventional three-address, linear code. It is similar to SSA but not exactly so as it lacks phi nodes. A single instruction of LIR is called a LIns, short for "LIR instruction". The LIns values are inserted into a LIR buffer, itself contained within a logical fragment, and the nanojit compilation pipeline and Assembler transforms the LIns values into NIns values (i.e. machine code).
 
 ## Fragment
-A Fragment represents a single linear code sequence, typically terminating in a jump to another Fragment or back to the beginning of the Fragment. 
+A Fragment represents a chunk of code. A fragment can be made a function by giving it a LIR_start and appropriate return instructions, but it need not always be a function, i.e., it can be a fragment of a function.  
 
 ## Assembler
 The nanojit/Assembler.cpp and nanojit/Assembler.h files define the class Assembler, which transforms LIns values into NIns values. In other words, an Assembler transforms LIR code into native code. An Assembler is also able to modify existing fragments of native code, by rewriting native jump instructions to jump to new locations. In this way the Assembler can "patch together" multiple fragments, so that program control can flow from one fragment into another, or back out of generated code and into the interpreter.
