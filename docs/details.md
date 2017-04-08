@@ -5,6 +5,8 @@
 The LIR writer does not allow specifying whether a parameter is 32-bit or 64-bit. Apparently the size is set automatically based 
 on machine architecture. See mozilla [bug 541232](https://bugzilla.mozilla.org/show_bug.cgi?id=541232). 
 
+I have also found it necessary to copy function parameters to the stack, as the parameter value appears to not be preserved across jumps. This could be my misunderstanding though.
+
 ## Jumps and Labels
 
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
