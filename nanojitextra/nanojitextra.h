@@ -1,12 +1,20 @@
 #ifndef __nanojit_extra__
 #define __nanojit_extra__
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+typedef enum {
+  NJXOpIntKind = 1,
+  NJXOpQuadKind = 2,
+  NJXOpPtrKind = 2,
+  NJXOpDoubleKind = 3,
+  NJXOpFloatKind = 4,
+} NJXOpKind;
 
 typedef struct NJXLIns *NJXLInsRef;
 
@@ -51,8 +59,8 @@ extern void *NJX_get_function_by_name(const char *name);
 * If optimize flag is true then NanoJit's CSE and Expr filters are enabled.
 */
 extern NJXFunctionBuilderRef NJX_create_function_builder(NJXContextRef context,
-                                                  const char *name,
-                                                  int optimize);
+                                                         const char *name,
+                                                         int optimize);
 
 /**
 * Destroys the FunctionBuilder object. Note that this will not delete the
@@ -94,6 +102,11 @@ extern NJXLInsRef NJX_immq(NJXFunctionBuilderRef fn, int64_t q);
 extern NJXLInsRef NJX_immd(NJXFunctionBuilderRef fn, double d);
 
 /**
+* Creates a float constant
+*/
+extern NJXLInsRef NJX_immf(NJXFunctionBuilderRef fn, float f);
+
+/**
 * Adds a function parameter - the parameter size is always the
 * default register size I think - so on a 64-bit machine it will be
 * quads whereas on 32-bit machines it will be words. Caller must
@@ -106,15 +119,30 @@ extern NJXLInsRef NJX_insert_parameter(NJXFunctionBuilderRef fn);
 /**
 * Integer add
 */
-extern NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
-extern NJXLInsRef NJX_addq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
-extern NJXLInsRef NJX_addd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
-extern NJXLInsRef NJX_addf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_addq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
 
-extern NJXLInsRef NJX_eqi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
-extern NJXLInsRef NJX_eqq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
-extern NJXLInsRef NJX_eqd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
-extern NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+/**
+* Floating point add
+*/
+extern NJXLInsRef NJX_addd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_addf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+
+/**
+* Tests lhs == rhs, result is 1 or 0
+*/
+extern NJXLInsRef NJX_eqi(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_eqq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_eqd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
 
 /**
 * Converts a quad to an int
@@ -139,38 +167,58 @@ extern NJXLInsRef NJX_br(NJXFunctionBuilderRef fn, NJXLInsRef to);
 /**
 * Inserts a conditional branch - jump targets can be NULL and set later
 */
-extern NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to);
-extern NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to);
+extern NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond,
+                               NJXLInsRef to);
+extern NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond,
+                                NJXLInsRef to);
 
 /**
 * Sets the target of a jump instruction
 * target should be a label instruction
-* and jmp should be the jump instruction returned by NJX_br(), NJX_cbr_true() or NJX_cbr_false().
+* and jmp should be the jump instruction returned by NJX_br(), NJX_cbr_true() or
+* NJX_cbr_false().
 */
 extern void NJX_set_jmp_target(NJXLInsRef jmp, NJXLInsRef target);
 
-extern NJXLInsRef NJX_load_c2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_uc2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_s2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_us2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_q(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_f(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_load_f2d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_load_c2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                               int32_t offset);
+extern NJXLInsRef NJX_load_uc2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                                 int32_t offset);
+extern NJXLInsRef NJX_load_s2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                               int32_t offset);
+extern NJXLInsRef NJX_load_us2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                                 int32_t offset);
+extern NJXLInsRef NJX_load_i(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                             int32_t offset);
+extern NJXLInsRef NJX_load_q(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                             int32_t offset);
+extern NJXLInsRef NJX_load_f(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                             int32_t offset);
+extern NJXLInsRef NJX_load_d(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                             int32_t offset);
+extern NJXLInsRef NJX_load_f2d(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                               int32_t offset);
 
-extern NJXLInsRef NJX_store_i2c(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_store_i2s(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_store_i(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_store_q(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_store_d(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
-extern NJXLInsRef NJX_store_f(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_i2c(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                                NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_i2s(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                                NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_i(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                              NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_q(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                              NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_d(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                              NJXLInsRef ptr, int32_t offset);
+extern NJXLInsRef NJX_store_f(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                              NJXLInsRef ptr, int32_t offset);
 
+/**
+* Tests the type of an instruction
+*/
 extern bool NJX_is_i(NJXLInsRef ins);
 extern bool NJX_is_q(NJXLInsRef ins);
 extern bool NJX_is_d(NJXLInsRef ins);
 extern bool NJX_is_f(NJXLInsRef ins);
-
 
 /**
 * Completes the function, and assembles the code.

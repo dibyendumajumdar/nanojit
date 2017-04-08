@@ -193,6 +193,9 @@ public:
   */
   LIns *retq(LIns *result);
 
+  /**
+  * Add a void return - TODO check that LIR_x is the right instruction to emit
+  */
   LIns *ret() {
 	  return lir_->ins0(LIR_x);
   }
@@ -211,6 +214,11 @@ public:
   * Creates a double constant
   */
   LIns *immd(double d) { return lir_->insImmD(d); }
+
+  /**
+  * Creates a float constant
+  */
+  LIns *immf(float f) { return lir_->insImmF(f); }
 
   /**
   * Adds a function parameter - the parameter size is always the
@@ -524,23 +532,14 @@ void NJX_destroy_function_builder(NJXFunctionBuilderRef fn) {
   delete impl;
 }
 
-/**
-* Adds an integer return instruction.
-*/
 NJXLInsRef NJX_reti(NJXFunctionBuilderRef fn, NJXLInsRef result) {
   return wrap_ins(unwrap_function_builder(fn)->reti(unwrap_ins(result)));
 }
 
-/**
-* Adds a double return instruction.
-*/
 NJXLInsRef NJX_retd(NJXFunctionBuilderRef fn, NJXLInsRef result) {
   return wrap_ins(unwrap_function_builder(fn)->retd(unwrap_ins(result)));
 }
 
-/**
-* Adds a quad return instruction.
-*/
 NJXLInsRef NJX_retq(NJXFunctionBuilderRef fn, NJXLInsRef result) {
   return wrap_ins(unwrap_function_builder(fn)->retq(unwrap_ins(result)));
 }
@@ -549,26 +548,20 @@ NJXLInsRef NJX_ret(NJXFunctionBuilderRef fn) {
 	return wrap_ins(unwrap_function_builder(fn)->ret());
 }
 
-
-/**
-* Creates an int32 constant
-*/
 NJXLInsRef NJX_immi(NJXFunctionBuilderRef fn, int32_t i) {
   return wrap_ins(unwrap_function_builder(fn)->immi(i));
 }
 
-/**
-* Creates an int64 constant
-*/
 NJXLInsRef NJX_immq(NJXFunctionBuilderRef fn, int64_t q) {
   return wrap_ins(unwrap_function_builder(fn)->immq(q));
 }
 
-/**
-* Creates a double constant
-*/
 NJXLInsRef NJX_immd(NJXFunctionBuilderRef fn, double d) {
   return wrap_ins(unwrap_function_builder(fn)->immd(d));
+}
+
+NJXLInsRef NJX_immf(NJXFunctionBuilderRef fn, float f) {
+	return wrap_ins(unwrap_function_builder(fn)->immf(f));
 }
 
 /**
@@ -583,9 +576,6 @@ NJXLInsRef NJX_insert_parameter(NJXFunctionBuilderRef fn) {
   return wrap_ins(unwrap_function_builder(fn)->insertParameter());
 }
 
-/**
-* Integer add
-*/
 NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
       unwrap_function_builder(fn)->addi(unwrap_ins(lhs), unwrap_ins((rhs))));
@@ -622,46 +612,27 @@ NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
 		unwrap_function_builder(fn)->eqf(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 
-
-/**
-* Converts a quad to an int
-*/
 NJXLInsRef NJX_q2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
   return wrap_ins(unwrap_function_builder(fn)->q2i(unwrap_ins(q)));
 }
 
-/**
-* Adds a lael, no code is emitted for this
-*/
 NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn) {
   return wrap_ins(unwrap_function_builder(fn)->addLabel());
 }
 
-/**
-* Allocates 'size' bytes on the stack
-*/
 NJXLInsRef NJX_alloca(NJXFunctionBuilderRef fn, int32_t size) {
 	return wrap_ins(unwrap_function_builder(fn)->allocA(size));
 }
 
-/**
-* Inserts an unconditional jump - to can be NULL and set later
-*/
 NJXLInsRef NJX_br(NJXFunctionBuilderRef fn, NJXLInsRef to) {
 	return wrap_ins(unwrap_function_builder(fn)->br(unwrap_ins(to)));
 }
 
-/**
-* Inserts a conditional branch - jump targets can be NULL and set later
-*/
 NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to) {
 	return wrap_ins(
 		unwrap_function_builder(fn)->cbrTrue(unwrap_ins(cond), unwrap_ins((to))));
 }
 
-/**
-* Inserts a conditional branch - jump targets can be NULL and set later
-*/
 NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to) {
 	return wrap_ins(
 		unwrap_function_builder(fn)->cbrFalse(unwrap_ins(cond), unwrap_ins((to))));
@@ -719,7 +690,6 @@ bool NJX_is_q(NJXLInsRef ins) { return unwrap_ins(ins)->isQ(); }
 bool NJX_is_d(NJXLInsRef ins) { return unwrap_ins(ins)->isD(); }
 bool NJX_is_f(NJXLInsRef ins) { return unwrap_ins(ins)->isF(); }
 
-
 /**
 * Sets the target of a jump instruction
 */
@@ -728,7 +698,6 @@ void NJX_set_jmp_target(NJXLInsRef jmp, NJXLInsRef target) {
 	auto targetins = unwrap_ins(target);
 	jmpins->setTarget(targetins);
 }
-
 
 /**
 * Completes the function, and assembles the code.
