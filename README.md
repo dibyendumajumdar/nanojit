@@ -1,5 +1,5 @@
-# nanojit
-Nanojit is a small, cross-platform C++ library that emits machine code. It is part of [Adobe ActionScript](https://github.com/adobe/avmplus) 
+# NanoJIT
+NanoJIT is a small, cross-platform C++ library that emits machine code. It is part of [Adobe ActionScript](https://github.com/adobe/avmplus) 
 and used to be part of [Mozilla SpiderMonkey](https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Internals/Tracing_JIT) but is no longer used in SpiderMonkey.
 
 ## High level overview
@@ -91,6 +91,9 @@ NJX_destroy_context(jit);
 
 ```
 
+## More examples
+I am trying to use NanoJIT as the backend for a C compiler - you can see more examples of [NanoJIT LIR here](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
+
 ## Building Nanojit
 While the goal of this project is to create a standalone build of Nanojit, the original folder structure of avmplus is maintained so that merging upstream changes is easier.
 
@@ -101,10 +104,10 @@ To create Visual Studio project files do following:
 ```
 mkdir build
 cd build
-cmake -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug ..
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
-Building the project will result in a standalone nanojit and naojitextra libraries, and the executable lirasm which can be used to assemble and run standalone code snippets as described above. 
+Building the project will result in a standalone nanojit and naojitextra libraries, and the executable lirasm which can be used to assemble and run standalone code snippets as described above. Assuming you specified the CMAKE_INSTALL_PREFIX you can install the header files and the library using your build script.
 
 ## Documentation
 A secondary goal of this project is to create some documentation of the standalone library, and document how it can be used. 
