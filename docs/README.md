@@ -4,4 +4,4 @@
 
 * [Overview](./overview.md)
 * [LIR Opcodes](./nanjit-opcodes.md)
-* [Notes](./details.md)
+* [NanoJIT Notes](./details.md)
