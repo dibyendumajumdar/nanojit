@@ -2,10 +2,15 @@
 
 ## Function parameters
 
+### All parameters are fixed size
 The LIR writer does not allow specifying whether a parameter is 32-bit or 64-bit. Apparently the size is set automatically based 
 on machine architecture. See mozilla [bug 541232](https://bugzilla.mozilla.org/show_bug.cgi?id=541232). 
 
+### Parameters need to be copied
 I have also found it necessary to copy function parameters to the stack, as the parameter value appears to not be preserved across jumps. This could be my misunderstanding though.
+
+### Number of parameters is limited
+At least with the X86_64 backend it seems that Nanojit only supports passing parameters via registers, so that means at most 4-5 parameters can be passed depending upon the OS. So probably best to design JITed functions to take a pointer to struct argument.
 
 ## Jumps and Labels
 
