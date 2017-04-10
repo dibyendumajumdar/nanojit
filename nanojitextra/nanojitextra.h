@@ -145,9 +145,20 @@ extern NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                           NJXLInsRef rhs);
 
 /**
-* Converts a quad to an int
+* Conversions
 */
+extern NJXLInsRef NJX_i2q(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_ui2uq(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_q2i(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_q2d(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_i2d(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_i2f(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_ui2d(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_ui2f(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_f2d(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_d2f(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_d2i(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_f2i(NJXFunctionBuilderRef fn, NJXLInsRef q);
 
 /**
 * Inserts a label at current position, no code is emitted for this

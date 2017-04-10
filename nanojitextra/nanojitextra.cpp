@@ -278,13 +278,19 @@ public:
   LIns *eqd(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqd, lhs, rhs); }
   LIns *eqf(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqf, lhs, rhs); }
 
-  LIns *q2i(LIns *q) {
-#ifdef NANOJIT_64BIT
-    return lir_->ins1(LIR_q2i, q);
-#else
-    return q;
-#endif
-  }
+  LIns *i2q(LIns *q) { return lir_->ins1(LIR_i2q, q); }
+  LIns *ui2uq(LIns *q) { return lir_->ins1(LIR_ui2uq, q); }
+  LIns *q2i(LIns *q) { return lir_->ins1(LIR_q2i, q); }
+  LIns *q2d(LIns *q) { return lir_->ins1(LIR_q2d, q); }
+  LIns *i2d(LIns *q) { return lir_->ins1(LIR_i2d, q); }
+  LIns *i2f(LIns *q) { return lir_->ins1(LIR_i2f, q); }
+  LIns *ui2d(LIns *q) { return lir_->ins1(LIR_ui2d, q); }
+  LIns *ui2f(LIns *q) { return lir_->ins1(LIR_ui2f, q); }
+  LIns *f2d(LIns *q) { return lir_->ins1(LIR_f2d, q); }
+  LIns *d2f(LIns *q) { return lir_->ins1(LIR_d2f, q); }
+  LIns *d2i(LIns *q) { return lir_->ins1(LIR_d2i, q); }
+  LIns *f2i(LIns *q) { return lir_->ins1(LIR_f2i, q); }
+
 
   /**
   * Completes the fragment, adds a guard record and if all ok, assembles the
@@ -612,9 +618,43 @@ NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
 		unwrap_function_builder(fn)->eqf(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 
-NJXLInsRef NJX_q2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-  return wrap_ins(unwrap_function_builder(fn)->q2i(unwrap_ins(q)));
+NJXLInsRef NJX_i2q(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+  return wrap_ins(unwrap_function_builder(fn)->i2q(unwrap_ins(q)));
 }
+NJXLInsRef NJX_ui2uq(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->ui2uq(unwrap_ins(q)));
+}
+NJXLInsRef NJX_q2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->q2i(unwrap_ins(q)));
+}
+NJXLInsRef NJX_q2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->q2d(unwrap_ins(q)));
+}
+NJXLInsRef NJX_i2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->i2d(unwrap_ins(q)));
+}
+NJXLInsRef NJX_i2f(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->i2f(unwrap_ins(q)));
+}
+NJXLInsRef NJX_ui2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->ui2d(unwrap_ins(q)));
+}
+NJXLInsRef NJX_ui2f(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->ui2f(unwrap_ins(q)));
+}
+NJXLInsRef NJX_f2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->f2d(unwrap_ins(q)));
+}
+NJXLInsRef NJX_d2f(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->d2f(unwrap_ins(q)));
+}
+NJXLInsRef NJX_d2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->d2i(unwrap_ins(q)));
+}
+NJXLInsRef NJX_f2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->f2i(unwrap_ins(q)));
+}
+
 
 NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn) {
   return wrap_ins(unwrap_function_builder(fn)->addLabel());
