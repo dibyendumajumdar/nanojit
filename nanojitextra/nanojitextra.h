@@ -47,7 +47,7 @@ extern void NJX_destroy_context(NJXContextRef);
 * Returns a compiled function looking it up by name.
 * The point must be cast to the correct signature.
 */
-extern void *NJX_get_function_by_name(const char *name);
+extern void *NJX_get_function_by_name(NJXContextRef, const char *name);
 
 /**
 * Creates a new FunctionBuilder object. The builder is used to construct the
@@ -230,6 +230,14 @@ extern bool NJX_is_i(NJXLInsRef ins);
 extern bool NJX_is_q(NJXLInsRef ins);
 extern bool NJX_is_d(NJXLInsRef ins);
 extern bool NJX_is_f(NJXLInsRef ins);
+
+/*
+* Insert liveness information
+*/
+extern NJXLInsRef NJX_liveq(NJXFunctionBuilderRef fn, NJXLInsRef);
+extern NJXLInsRef NJX_livei(NJXFunctionBuilderRef fn, NJXLInsRef);
+extern NJXLInsRef NJX_livef(NJXFunctionBuilderRef fn, NJXLInsRef);
+extern NJXLInsRef NJX_lived(NJXFunctionBuilderRef fn, NJXLInsRef);
 
 /**
 * Completes the function, and assembles the code.

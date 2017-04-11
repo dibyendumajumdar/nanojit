@@ -118,6 +118,8 @@ public:
 public:
   NanoJitContextImpl(bool verbose, Config config);
   ~NanoJitContextImpl();
+
+  LirasmFragment *get_fragment(const char *name);
 };
 
 /**
@@ -291,6 +293,10 @@ public:
   LIns *d2i(LIns *q) { return lir_->ins1(LIR_d2i, q); }
   LIns *f2i(LIns *q) { return lir_->ins1(LIR_f2i, q); }
 
+  LIns *liveq(LIns *q) { return lir_->ins1(LIR_liveq, q); }
+  LIns *livei(LIns *q) { return lir_->ins1(LIR_livei, q); }
+  LIns *livef(LIns *q) { return lir_->ins1(LIR_livef, q); }
+  LIns *lived(LIns *q) { return lir_->ins1(LIR_lived, q); }
 
   /**
   * Completes the fragment, adds a guard record and if all ok, assembles the
@@ -333,6 +339,14 @@ NanoJitContextImpl::~NanoJitContextImpl() {
   for (i = fragments_.begin(); i != fragments_.end(); ++i) {
     delete i->second.fragptr;
   }
+}
+
+LirasmFragment *NanoJitContextImpl::get_fragment(const char *name) {
+	std::string n(name);
+	auto &result = fragments_.find(n);
+	if (result == fragments_.end())
+		return nullptr;
+	return &result->second;
 }
 
 FunctionBuilderImpl::FunctionBuilderImpl(NanoJitContextImpl &parent,
@@ -525,6 +539,22 @@ void NJX_destroy_context(NJXContextRef ctx) {
   delete impl;
 }
 
+void *NJX_get_function_by_name(NJXContextRef ctx, const char *name) {
+	auto impl = unwrap_context(ctx);
+	LirasmFragment *f = impl->get_fragment(name);
+	if (f) {
+		switch (f->mReturnType) {
+		case RT_INT:
+			return reinterpret_cast<void *>(f->rint);
+		case RT_QUAD:
+			return reinterpret_cast<void *>(f->rquad);
+		case RT_DOUBLE:
+			return reinterpret_cast<void *>(f->rdouble);
+		}
+	}
+	return nullptr;
+}
+
 NJXFunctionBuilderRef NJX_create_function_builder(NJXContextRef context,
                                                   const char *name,
                                                   int optimize) {
@@ -655,6 +685,18 @@ NJXLInsRef NJX_f2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
 	return wrap_ins(unwrap_function_builder(fn)->f2i(unwrap_ins(q)));
 }
 
+NJXLInsRef NJX_liveq(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->liveq(unwrap_ins(q)));
+}
+NJXLInsRef NJX_livei(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->livei(unwrap_ins(q)));
+}
+NJXLInsRef NJX_livef(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->livef(unwrap_ins(q)));
+}
+NJXLInsRef NJX_lived(NJXFunctionBuilderRef fn, NJXLInsRef q) {
+	return wrap_ins(unwrap_function_builder(fn)->lived(unwrap_ins(q)));
+}
 
 NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn) {
   return wrap_ins(unwrap_function_builder(fn)->addLabel());
