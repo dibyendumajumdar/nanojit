@@ -124,4 +124,4 @@ A secondary goal of this project is to create some documentation of the standalo
 It seems that NanoJIT is one of the rare examples of a small cross-platform standalone JIT library that can be used outside of the original project. It also matters that the license is not GPL. Finally it has been in production use in ActionScript and Adobe Flash for some time so one hopes that most bugs have been ironed out.
 
 ## Why not NanoJIT?
-Support is virtually non-existent. The original architect/developer Edwin Smith is no longer at Adobe, and works at [Facebook on HHVM](https://www.youtube.com/watch?v=GT4LxjJd2Ac). But he is not involved with NanoJIT anymore, but has graciously answered some of my questions. The Adobe team do not seem to respond to issues. 
+Support is virtually non-existent. The original architect/developer Edwin Smith is no longer at Adobe, and works at [Facebook on HHVM](https://www.youtube.com/watch?v=GT4LxjJd2Ac). Although he is not involved with NanoJIT anymore, but has graciously answered some of my questions. The Adobe team do not seem to respond to [issues](https://github.com/adobe/avmplus/issues). 
