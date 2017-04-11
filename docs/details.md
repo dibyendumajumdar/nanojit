@@ -7,7 +7,22 @@ The LIR writer does not allow specifying whether a parameter is 32-bit or 64-bit
 on machine architecture. See mozilla [bug 541232](https://bugzilla.mozilla.org/show_bug.cgi?id=541232). 
 
 ### Parameters need to be copied
-I have also found it necessary to copy function parameters to the stack, as the parameter value appears to not be preserved across jumps. This could be my misunderstanding though.
+I have also found it necessary to copy function parameters to the stack, as the parameter value appears to not be preserved across jumps. This could be my misunderstanding though. 
+
+Update: I understand from Edwin Smith (original Nanojit architect) that the reason why a parameter may be getting clobberred is because:
+
+> The register allocator computes virtual register liveness as it runs, while it
+is scanning LIR bottom-up. If the parameter register is being reused, it's
+because the register allocator thinks it's available.  Since it's running bottom
+up, it will see the uses of a register before the definition, if the register is
+being used at all.
+
+> Loops are tricky. If a virtual register is being defined before the loop entry
+point, and used inside a loop, then it's live range must cover the whole loop.
+the frontend compiler must insert LIR_live at the loop jumps (back edges)
+to extend the live range. see LIR_livei, livep, etc..
+
+I will look at how to get the appropriate LIR_live instructions generated.
 
 ### Number of parameters is limited
 At least with the X86_64 backend it seems that Nanojit only supports passing parameters via registers, so that means at most 4-5 parameters can be passed depending upon the OS. So probably best to design JITed functions to take a pointer to struct argument.
