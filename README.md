@@ -11,7 +11,7 @@ The main unit of compilation in Nanojit is a Fragment - which can be thought of 
 
 A limitation (or complexity) in Nanojit is that function parameters are always the architecture word size, i.e. 64-bit on 64-bit platforms, and 32-bit on 32-bit platforms. This means that you cannot directly pass a double as a parameter on a 32-bit platform! However the workaround is simple, just pass a pointer to a struct that contains the arguments. Of course Nanojit does not understand structs so you need to call the relevant memory load/store operations.
 
-The documentation on Nanojit is sparse or non-existent, making it hard to get started. I hope to provide a simpler, documented api to make it easier to use Nanojit.
+The documentation on Nanojit is sparse or non-existent, making it hard to get started. I hope to provide a simpler, documented C API to make it easier to use Nanojit.
 
 ## Playing with Nanojit
 
@@ -118,7 +118,7 @@ A secondary goal of this project is to create some documentation of the standalo
 
 
 ## Why nanojit?
-It seems that this is perhaps the only small JIT library that is available. 
+It seems that Nanojit is one of the rare examples of a small cross-platform standalone JIT library that can be used outside of the original project. It also matters that the license is not GPL. Finally it has been in production use in ActionScript for some time so one hopes that most bugs have been ironed out.
 
 ## Why not nanojit?
-Support is virtually non-existent. The original developer Edwin Smith is no longer at Adobe, and works for Facebook now as far as I can tell. But he is not involved with Nanojit anymore. The Adobe team do not seem to respond to issues. 
+Support is virtually non-existent. The original architect/developer Edwin Smith is no longer at Adobe, and works at [Facebook on HHVM](https://www.youtube.com/watch?v=GT4LxjJd2Ac). But he is not involved with Nanojit anymore. The Adobe team do not seem to respond to issues. 
