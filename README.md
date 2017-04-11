@@ -60,8 +60,8 @@ You can see the generated code by running:
 lirasm -v add.in
 ```
 
-## Example using NanoJitExtra API
-This project is creating a simplified C API for nanojit - we call this nanojitexra. The API is defined in [nanojitextra.h](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h). *Note* that this is work in progress.
+## Example using NanoJITExtra API
+This project is creating a simplified C API for NanoJIT - I call this NanoJITExtra. The API is defined in [nanojitextra.h](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h). *Note* that this is work in progress.
 
 ```c++
 
@@ -95,7 +95,7 @@ NJX_destroy_context(jit);
 I am trying to use NanoJIT as the backend for a C compiler - you can see more examples of [NanoJIT LIR here](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
 
 ## Building NanoJIT
-While the goal of this project is to create a standalone build of Nanojit, the original folder structure of avmplus is maintained so that merging upstream changes is easier.
+While the goal of this project is to create a standalone build of NanoJIT, the original folder structure of avmplus is maintained so that merging upstream changes is easier.
 
 The new build is work in progress. A very early version of CMakeLists.txt is available, this has been tested only on Windows 10 with Visual Studio 2017. The aim is to initially support the build on X86_64 processors, and Windows, Linux and Mac OSX.  
 
@@ -107,7 +107,7 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
-Building the project will result in a standalone nanojit and naojitextra libraries, and the executable lirasm which can be used to assemble and run standalone code snippets as described above. Assuming you specified the CMAKE_INSTALL_PREFIX you can install the header files and the library using your build script.
+Building the project will result in a standalone NanoJIT and NanoJITExtra libraries, and the executable lirasm which can be used to assemble and run standalone code snippets as described above. Assuming you specified the CMAKE_INSTALL_PREFIX you can install the header files and the library using your build script.
 
 ## Using NanoJIT
 
@@ -120,7 +120,7 @@ A secondary goal of this project is to create some documentation of the standalo
 * [LIR Op Codes](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/nanjit-opcodes.md)
 * [Detailed Usage Notes](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/details.md)
 
-## Why nanoJIT?
+## Why NanoJIT?
 It seems that NanoJIT is one of the rare examples of a small cross-platform standalone JIT library that can be used outside of the original project. It also matters that the license is not GPL. Finally it has been in production use in ActionScript and Adobe Flash for some time so one hopes that most bugs have been ironed out.
 
 ## Why not NanoJIT?
