@@ -9,7 +9,7 @@ The NanoJIT IR is also restricted by platform, e.g. some instructions are only a
 
 The main unit of compilation in NanoJIT is a Fragment - which can be thought of as a chunk of code. You can make a function out of a fragment by providing a start instruction and appropriate ret instructions. But Fragments need not be functions. I believe this flexibility stems from the fact that NanoJIT was designed to be used in a tracing JIT.
 
-A limitation (or complexity) in NanoJITt is that function parameters are always the architecture word size, i.e. 64-bit on 64-bit platforms, and 32-bit on 32-bit platforms. This means that you cannot directly pass a double as a parameter on a 32-bit platform! However the workaround is simple, just pass a pointer to a struct that contains the arguments. Of course Nanojit does not understand structs so you need to call the relevant memory load/store operations.
+A limitation (or complexity) in NanoJIT is that function parameters are always the architecture word size, i.e. 64-bit on 64-bit platforms, and 32-bit on 32-bit platforms. This means that you cannot directly pass a double as a parameter on a 32-bit platform! However the workaround is simple, just pass a pointer to a struct that contains the arguments. Of course Nanojit does not understand structs so you need to call the relevant memory load/store operations.
 
 The documentation on NanoJIT is sparse or non-existent, making it hard to get started. I hope to provide a [simpler, documented C API](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h) to make it easier to use NanoJIT.
 
