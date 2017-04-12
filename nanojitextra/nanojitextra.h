@@ -268,6 +268,20 @@ extern NJXLInsRef NJX_livei(NJXFunctionBuilderRef fn, NJXLInsRef);
 extern NJXLInsRef NJX_livef(NJXFunctionBuilderRef fn, NJXLInsRef);
 extern NJXLInsRef NJX_lived(NJXFunctionBuilderRef fn, NJXLInsRef);
 
+enum NJXCallAbiKind {
+	NJX_CALLABI_FASTCALL,
+	NJX_CALLABI_THISCALL,
+	NJX_CALLABI_STDCALL,
+	NJX_CALLABI_CDECL
+};
+
+// TODO
+extern NJXLInsRef NJX_callv(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_calli(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_callq(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_callf(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+
 /**
 * Completes the function, and assembles the code.
 * If assembly is successful then the generated code is saved in the parent
@@ -276,6 +290,7 @@ extern NJXLInsRef NJX_lived(NJXFunctionBuilderRef fn, NJXLInsRef);
 * is valid, as all functions are destroyed when the Context ends.
 */
 extern void *NJX_finalize(NJXFunctionBuilderRef fn);
+
 
 #ifdef __cplusplus
 }

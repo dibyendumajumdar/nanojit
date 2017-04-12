@@ -15,6 +15,7 @@ enum ReturnType {
   RT_INT = 1,
   RT_QUAD = 2,
   RT_DOUBLE = 4,
+  RT_FLOAT = 8,
 };
 
 // We lump everything into a single access region for lirasm.
@@ -24,6 +25,7 @@ static const uint8_t LIRASM_NUM_USED_ACCS = 1;
 typedef int32_t(FASTCALL *RetInt)();
 typedef int64_t(FASTCALL *RetQuad)();
 typedef double(FASTCALL *RetDouble)();
+typedef float(FASTCALL *RetFloat)();
 
 struct Function {
   const char *name;
@@ -36,6 +38,7 @@ public:
     RetInt rint;
     RetQuad rquad;
     RetDouble rdouble;
+    RetFloat rfloat;
   };
   ReturnType mReturnType;
   Fragment *fragptr;
@@ -120,6 +123,10 @@ public:
   ~NanoJitContextImpl();
 
   LirasmFragment *get_fragment(const char *name);
+
+  // Lookup a function in fragments; populate CallInfo if found
+  // Returns true if found
+  bool lookupFunction(const std::string &name, CallInfo *&ci);
 };
 
 /**
@@ -198,9 +205,7 @@ public:
   /**
   * Add a void return - TODO check that LIR_x is the right instruction to emit
   */
-  LIns *ret() {
-	  return lir_->ins0(LIR_x);
-  }
+  LIns *ret() { return lir_->ins0(LIR_x); }
 
   /**
   * Creates an int32 constant
@@ -238,37 +243,71 @@ public:
   LIns *addLabel() { return lir_->ins0(LIR_label); }
 
   /**
-  * Allocate size bytes on the stack 
+  * Allocate size bytes on the stack
   */
   LIns *allocA(int32_t size) { return lir_->insAlloc(size); }
 
   /**
-  * Inserts an unconditional jump - to can be NULL and set later 
+  * Inserts an unconditional jump - to can be NULL and set later
   */
   LIns *br(LIns *to) { return lir_->insBranch(LIR_j, NULL, to); }
 
   /**
   * Inserts a conditional branch - jump targets can be NULL and set later
   */
-  LIns *cbrTrue(LIns *cond, LIns *to) { return lir_->insBranch(LIR_jt, cond, to); }
-  LIns *cbrFalse(LIns *cond, LIns *to) { return lir_->insBranch(LIR_jf, cond, to); }
+  LIns *cbrTrue(LIns *cond, LIns *to) {
+    return lir_->insBranch(LIR_jt, cond, to);
+  }
+  LIns *cbrFalse(LIns *cond, LIns *to) {
+    return lir_->insBranch(LIR_jf, cond, to);
+  }
 
-  LIns *loadc2i(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldc2i, ptr, offset, ACCSET_OTHER); }
-  LIns *loaduc2ui(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_lduc2ui, ptr, offset, ACCSET_OTHER); }
-  LIns *loads2i(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_lds2i, ptr, offset, ACCSET_OTHER); }
-  LIns *loadus2ui(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldus2ui, ptr, offset, ACCSET_OTHER); }
-  LIns *loadi(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldi, ptr, offset, ACCSET_OTHER); }
-  LIns *loadq(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldq, ptr, offset, ACCSET_OTHER); }
-  LIns *loadf(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldf, ptr, offset, ACCSET_OTHER); }
-  LIns *loadd(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldd, ptr, offset, ACCSET_OTHER); }
-  LIns *loadf2d(LIns *ptr, int32_t offset) { return lir_->insLoad(LIR_ldf2d, ptr, offset, ACCSET_OTHER); }
+  LIns *loadc2i(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_ldc2i, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loaduc2ui(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_lduc2ui, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loads2i(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_lds2i, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loadus2ui(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_ldus2ui, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loadi(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_ldi, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loadq(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_ldq, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loadf(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_ldf, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loadd(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_ldd, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *loadf2d(LIns *ptr, int32_t offset) {
+    return lir_->insLoad(LIR_ldf2d, ptr, offset, ACCSET_OTHER);
+  }
 
-  LIns *storei2c(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_sti2c, value, ptr, offset, ACCSET_OTHER); }
-  LIns *storei2s(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_sti2s, value, ptr, offset, ACCSET_OTHER); }
-  LIns *storei(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_sti, value, ptr, offset, ACCSET_OTHER); }
-  LIns *storeq(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_stq, value, ptr, offset, ACCSET_OTHER); }
-  LIns *stored(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_std, value, ptr, offset, ACCSET_OTHER); }
-  LIns *storef(LIns *value, LIns *ptr, int32_t offset) { return lir_->insStore(LIR_stf, value, ptr, offset, ACCSET_OTHER); }
+  LIns *storei2c(LIns *value, LIns *ptr, int32_t offset) {
+    return lir_->insStore(LIR_sti2c, value, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *storei2s(LIns *value, LIns *ptr, int32_t offset) {
+    return lir_->insStore(LIR_sti2s, value, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *storei(LIns *value, LIns *ptr, int32_t offset) {
+    return lir_->insStore(LIR_sti, value, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *storeq(LIns *value, LIns *ptr, int32_t offset) {
+    return lir_->insStore(LIR_stq, value, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *stored(LIns *value, LIns *ptr, int32_t offset) {
+    return lir_->insStore(LIR_std, value, ptr, offset, ACCSET_OTHER);
+  }
+  LIns *storef(LIns *value, LIns *ptr, int32_t offset) {
+    return lir_->insStore(LIR_stf, value, ptr, offset, ACCSET_OTHER);
+  }
 
   LIns *addi(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_addi, lhs, rhs); }
   LIns *addq(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_addq, lhs, rhs); }
@@ -297,6 +336,11 @@ public:
   LIns *livei(LIns *q) { return lir_->ins1(LIR_livei, q); }
   LIns *livef(LIns *q) { return lir_->ins1(LIR_livef, q); }
   LIns *lived(LIns *q) { return lir_->ins1(LIR_lived, q); }
+
+  LIns *comment(const char *s) { return lir_->insComment(s); }
+
+  LIns *call(const char *funcname, LOpcode opcode, AbiKind abi, int argc,
+             LIns *args[]);
 
   /**
   * Completes the fragment, adds a guard record and if all ok, assembles the
@@ -342,11 +386,40 @@ NanoJitContextImpl::~NanoJitContextImpl() {
 }
 
 LirasmFragment *NanoJitContextImpl::get_fragment(const char *name) {
-	std::string n(name);
-	auto &result = fragments_.find(n);
-	if (result == fragments_.end())
-		return nullptr;
-	return &result->second;
+  std::string n(name);
+  auto &result = fragments_.find(n);
+  if (result == fragments_.end())
+    return nullptr;
+  return &result->second;
+}
+
+bool NanoJitContextImpl::lookupFunction(const std::string &name,
+                                        CallInfo *&ci) {
+  Fragments::const_iterator func = fragments_.find(name);
+  if (func != fragments_.end()) {
+    // The ABI, arg types and ret type will be overridden by the caller.
+    if (func->second.mReturnType == RT_DOUBLE) {
+      CallInfo target = {(uintptr_t)func->second.rdouble, 0, ABI_FASTCALL,
+                         /*isPure*/ 0,
+                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      *ci = target;
+
+    } else if (func->second.mReturnType == RT_FLOAT) {
+      CallInfo target = {(uintptr_t)func->second.rfloat, 0, ABI_FASTCALL,
+                         /*isPure*/ 0,
+                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      *ci = target;
+
+    } else {
+      CallInfo target = {(uintptr_t)func->second.rint, 0, ABI_FASTCALL,
+                         /*isPure*/ 0,
+                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      *ci = target;
+    }
+    return true;
+  } else {
+    return false;
+  }
 }
 
 FunctionBuilderImpl::FunctionBuilderImpl(NanoJitContextImpl &parent,
@@ -398,6 +471,58 @@ FunctionBuilderImpl::~FunctionBuilderImpl() {
   delete exprFilter_;
   delete cseFilter_;
   delete bufWriter_;
+}
+
+LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
+                                AbiKind abi, int argc, LIns *argsin[]) {
+  if (argc < 0 || argc > MAXARGS)
+    return nullptr;
+
+  std::string func(funcname);
+  CallInfo *ci = new (parent_.alloc_) CallInfo;
+
+  bool known = parent_.lookupFunction(func, ci);
+  if (!known)
+    return nullptr;
+
+  ci->_abi = abi;
+  ArgType argTypes[MAXARGS];
+
+  LIns *args[MAXARGS];
+  memset(&args[0], 0, sizeof(args));
+
+  for (int j = argc - 1; j >= 0; j--) {
+    NanoAssert(j < MAXARGS); // should give a useful error msg if this fails
+    int i = j - argc + 1;
+    NanoAssert(i >= 0 && i < argc);
+    args[i] = argsin[j];
+    if (args[i]->isD())
+      argTypes[i] = ARGTYPE_D;
+    else if (args[i]->isF())
+      argTypes[i] = ARGTYPE_F;
+    else if (args[i]->isQ())
+      argTypes[i] = ARGTYPE_Q;
+    else
+      argTypes[i] = ARGTYPE_I;
+  }
+
+  // Select return type from opcode.
+  ArgType retType = ARGTYPE_P;
+  if (opcode == LIR_callv)
+    retType = ARGTYPE_V;
+  else if (opcode == LIR_calli)
+    retType = ARGTYPE_I;
+  else if (opcode == LIR_callq)
+    retType = ARGTYPE_Q;
+  else if (opcode == LIR_calld)
+    retType = ARGTYPE_D;
+  else if (opcode == LIR_callf)
+    retType = ARGTYPE_F;
+  else
+    return nullptr;
+  ci->_typesig = CallInfo::typeSigN(retType, (int)argc, argTypes);
+
+  return lir_->insCall(ci, args);
 }
 
 LIns *FunctionBuilderImpl::reti(LIns *result) {
@@ -484,12 +609,14 @@ void *FunctionBuilderImpl::finalize() {
     f->rquad = (RetQuad)((uintptr_t)fragment_->code());
     f->mReturnType = RT_QUAD;
     return f->rquad;
-    break;
   case RT_DOUBLE:
     f->rdouble = (RetDouble)((uintptr_t)fragment_->code());
     f->mReturnType = RT_DOUBLE;
     return f->rdouble;
-    break;
+  case RT_FLOAT:
+    f->rfloat = (RetFloat)((uintptr_t)fragment_->code());
+    f->mReturnType = RT_FLOAT;
+    return f->rfloat;
   default:
     NanoAssert(0);
     std::cerr << "invalid return type\n";
@@ -540,19 +667,21 @@ void NJX_destroy_context(NJXContextRef ctx) {
 }
 
 void *NJX_get_function_by_name(NJXContextRef ctx, const char *name) {
-	auto impl = unwrap_context(ctx);
-	LirasmFragment *f = impl->get_fragment(name);
-	if (f) {
-		switch (f->mReturnType) {
-		case RT_INT:
-			return reinterpret_cast<void *>(f->rint);
-		case RT_QUAD:
-			return reinterpret_cast<void *>(f->rquad);
-		case RT_DOUBLE:
-			return reinterpret_cast<void *>(f->rdouble);
-		}
-	}
-	return nullptr;
+  auto impl = unwrap_context(ctx);
+  LirasmFragment *f = impl->get_fragment(name);
+  if (f) {
+    switch (f->mReturnType) {
+    case RT_INT:
+      return reinterpret_cast<void *>(f->rint);
+    case RT_QUAD:
+      return reinterpret_cast<void *>(f->rquad);
+    case RT_DOUBLE:
+      return reinterpret_cast<void *>(f->rdouble);
+    case RT_FLOAT:
+      return reinterpret_cast<void *>(f->rfloat);
+    }
+  }
+  return nullptr;
 }
 
 NJXFunctionBuilderRef NJX_create_function_builder(NJXContextRef context,
@@ -581,7 +710,7 @@ NJXLInsRef NJX_retq(NJXFunctionBuilderRef fn, NJXLInsRef result) {
 }
 
 NJXLInsRef NJX_ret(NJXFunctionBuilderRef fn) {
-	return wrap_ins(unwrap_function_builder(fn)->ret());
+  return wrap_ins(unwrap_function_builder(fn)->ret());
 }
 
 NJXLInsRef NJX_immi(NJXFunctionBuilderRef fn, int32_t i) {
@@ -597,7 +726,7 @@ NJXLInsRef NJX_immd(NJXFunctionBuilderRef fn, double d) {
 }
 
 NJXLInsRef NJX_immf(NJXFunctionBuilderRef fn, float f) {
-	return wrap_ins(unwrap_function_builder(fn)->immf(f));
+  return wrap_ins(unwrap_function_builder(fn)->immf(f));
 }
 
 /**
@@ -617,85 +746,85 @@ NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
       unwrap_function_builder(fn)->addi(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 NJXLInsRef NJX_addq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->addq(unwrap_ins(lhs), unwrap_ins((rhs))));
+  return wrap_ins(
+      unwrap_function_builder(fn)->addq(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 
 NJXLInsRef NJX_addd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->addd(unwrap_ins(lhs), unwrap_ins((rhs))));
+  return wrap_ins(
+      unwrap_function_builder(fn)->addd(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 NJXLInsRef NJX_addf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->addf(unwrap_ins(lhs), unwrap_ins((rhs))));
+  return wrap_ins(
+      unwrap_function_builder(fn)->addf(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 
 NJXLInsRef NJX_eqi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->eqi(unwrap_ins(lhs), unwrap_ins((rhs))));
+  return wrap_ins(
+      unwrap_function_builder(fn)->eqi(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 NJXLInsRef NJX_eqq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->eqq(unwrap_ins(lhs), unwrap_ins((rhs))));
+  return wrap_ins(
+      unwrap_function_builder(fn)->eqq(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 
 NJXLInsRef NJX_eqd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->eqd(unwrap_ins(lhs), unwrap_ins((rhs))));
+  return wrap_ins(
+      unwrap_function_builder(fn)->eqd(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->eqf(unwrap_ins(lhs), unwrap_ins((rhs))));
+  return wrap_ins(
+      unwrap_function_builder(fn)->eqf(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 
 NJXLInsRef NJX_i2q(NJXFunctionBuilderRef fn, NJXLInsRef q) {
   return wrap_ins(unwrap_function_builder(fn)->i2q(unwrap_ins(q)));
 }
 NJXLInsRef NJX_ui2uq(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->ui2uq(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->ui2uq(unwrap_ins(q)));
 }
 NJXLInsRef NJX_q2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->q2i(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->q2i(unwrap_ins(q)));
 }
 NJXLInsRef NJX_q2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->q2d(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->q2d(unwrap_ins(q)));
 }
 NJXLInsRef NJX_i2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->i2d(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->i2d(unwrap_ins(q)));
 }
 NJXLInsRef NJX_i2f(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->i2f(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->i2f(unwrap_ins(q)));
 }
 NJXLInsRef NJX_ui2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->ui2d(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->ui2d(unwrap_ins(q)));
 }
 NJXLInsRef NJX_ui2f(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->ui2f(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->ui2f(unwrap_ins(q)));
 }
 NJXLInsRef NJX_f2d(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->f2d(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->f2d(unwrap_ins(q)));
 }
 NJXLInsRef NJX_d2f(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->d2f(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->d2f(unwrap_ins(q)));
 }
 NJXLInsRef NJX_d2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->d2i(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->d2i(unwrap_ins(q)));
 }
 NJXLInsRef NJX_f2i(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->f2i(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->f2i(unwrap_ins(q)));
 }
 
 NJXLInsRef NJX_liveq(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->liveq(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->liveq(unwrap_ins(q)));
 }
 NJXLInsRef NJX_livei(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->livei(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->livei(unwrap_ins(q)));
 }
 NJXLInsRef NJX_livef(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->livef(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->livef(unwrap_ins(q)));
 }
 NJXLInsRef NJX_lived(NJXFunctionBuilderRef fn, NJXLInsRef q) {
-	return wrap_ins(unwrap_function_builder(fn)->lived(unwrap_ins(q)));
+  return wrap_ins(unwrap_function_builder(fn)->lived(unwrap_ins(q)));
 }
 
 NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn) {
@@ -703,68 +832,96 @@ NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn) {
 }
 
 NJXLInsRef NJX_alloca(NJXFunctionBuilderRef fn, int32_t size) {
-	return wrap_ins(unwrap_function_builder(fn)->allocA(size));
+  return wrap_ins(unwrap_function_builder(fn)->allocA(size));
 }
 
 NJXLInsRef NJX_br(NJXFunctionBuilderRef fn, NJXLInsRef to) {
-	return wrap_ins(unwrap_function_builder(fn)->br(unwrap_ins(to)));
+  return wrap_ins(unwrap_function_builder(fn)->br(unwrap_ins(to)));
 }
 
-NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->cbrTrue(unwrap_ins(cond), unwrap_ins((to))));
+NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond,
+                        NJXLInsRef to) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->cbrTrue(unwrap_ins(cond), unwrap_ins((to))));
 }
 
-NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef to) {
-	return wrap_ins(
-		unwrap_function_builder(fn)->cbrFalse(unwrap_ins(cond), unwrap_ins((to))));
+NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond,
+                         NJXLInsRef to) {
+  return wrap_ins(unwrap_function_builder(fn)->cbrFalse(unwrap_ins(cond),
+                                                        unwrap_ins((to))));
 }
 
-NJXLInsRef NJX_load_c2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loadc2i(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_c2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                        int32_t offset) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->loadc2i(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_uc2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loaduc2ui(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_uc2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                          int32_t offset) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->loaduc2ui(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_s2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loads2i(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_s2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                        int32_t offset) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->loads2i(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_us2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loadus2ui(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_us2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                          int32_t offset) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->loadus2ui(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_i(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loadi(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_i(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                      int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->loadi(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_q(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loadq(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_q(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                      int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->loadq(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_f(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loadf(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_f(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                      int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->loadf(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loadd(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_d(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                      int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->loadd(unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_load_f2d(NJXFunctionBuilderRef fn, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->loadf2d(unwrap_ins(ptr), offset));
+NJXLInsRef NJX_load_f2d(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
+                        int32_t offset) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->loadf2d(unwrap_ins(ptr), offset));
 }
 
-NJXLInsRef NJX_store_i2c(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->storei2c(unwrap_ins(value), unwrap_ins(ptr), offset));
+NJXLInsRef NJX_store_i2c(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                         NJXLInsRef ptr, int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->storei2c(
+      unwrap_ins(value), unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_store_i2s(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->storei2s(unwrap_ins(value), unwrap_ins(ptr), offset));
+NJXLInsRef NJX_store_i2s(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                         NJXLInsRef ptr, int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->storei2s(
+      unwrap_ins(value), unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_store_i(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->storei(unwrap_ins(value), unwrap_ins(ptr), offset));
+NJXLInsRef NJX_store_i(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                       NJXLInsRef ptr, int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->storei(unwrap_ins(value),
+                                                      unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_store_q(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->storeq(unwrap_ins(value), unwrap_ins(ptr), offset));
+NJXLInsRef NJX_store_q(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                       NJXLInsRef ptr, int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->storeq(unwrap_ins(value),
+                                                      unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_store_d(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->stored(unwrap_ins(value), unwrap_ins(ptr), offset));
+NJXLInsRef NJX_store_d(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                       NJXLInsRef ptr, int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->stored(unwrap_ins(value),
+                                                      unwrap_ins(ptr), offset));
 }
-NJXLInsRef NJX_store_f(NJXFunctionBuilderRef fn, NJXLInsRef value, NJXLInsRef ptr, int32_t offset) {
-	return wrap_ins(unwrap_function_builder(fn)->storef(unwrap_ins(value), unwrap_ins(ptr), offset));
+NJXLInsRef NJX_store_f(NJXFunctionBuilderRef fn, NJXLInsRef value,
+                       NJXLInsRef ptr, int32_t offset) {
+  return wrap_ins(unwrap_function_builder(fn)->storef(unwrap_ins(value),
+                                                      unwrap_ins(ptr), offset));
 }
 
 bool NJX_is_i(NJXLInsRef ins) { return unwrap_ins(ins)->isI(); }
@@ -776,9 +933,9 @@ bool NJX_is_f(NJXLInsRef ins) { return unwrap_ins(ins)->isF(); }
 * Sets the target of a jump instruction
 */
 void NJX_set_jmp_target(NJXLInsRef jmp, NJXLInsRef target) {
-	auto jmpins = unwrap_ins(jmp);
-	auto targetins = unwrap_ins(target);
-	jmpins->setTarget(targetins);
+  auto jmpins = unwrap_ins(jmp);
+  auto targetins = unwrap_ins(target);
+  jmpins->setTarget(targetins);
 }
 
 /**
