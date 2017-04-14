@@ -141,6 +141,34 @@ extern NJXLInsRef NJX_addd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
 extern NJXLInsRef NJX_addf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                            NJXLInsRef rhs);
 
+/* Subtract */
+extern NJXLInsRef NJX_subi(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_subq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_subd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_subf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+
+/* Multiply */
+extern NJXLInsRef NJX_muli(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+/* TODO - quad multiply */
+extern NJXLInsRef NJX_muld(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_mulf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+
+/* Divide */
+extern NJXLInsRef NJX_divi(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+/* TODO quad divide */
+extern NJXLInsRef NJX_divd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_divf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+
 /**
 * Tests lhs == rhs, result is 1 or 0
 */
@@ -285,15 +313,20 @@ problematic as we should already have this when the function is defined,
 and not expect caller to provide.
 */
 extern NJXLInsRef NJX_callv(NJXFunctionBuilderRef fn, const char *funcname,
-                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs,
+                            NJXLInsRef args[]);
 extern NJXLInsRef NJX_calli(NJXFunctionBuilderRef fn, const char *funcname,
-                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs,
+                            NJXLInsRef args[]);
 extern NJXLInsRef NJX_callq(NJXFunctionBuilderRef fn, const char *funcname,
-                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs,
+                            NJXLInsRef args[]);
 extern NJXLInsRef NJX_callf(NJXFunctionBuilderRef fn, const char *funcname,
-                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs,
+                            NJXLInsRef args[]);
 extern NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, const char *funcname,
-                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs,
+                            NJXLInsRef args[]);
 
 /* Insert a comment */
 extern NJXLInsRef NJX_comment(NJXFunctionBuilderRef fn, const char *s);
