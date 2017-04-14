@@ -403,13 +403,16 @@ bool NanoJitContextImpl::lookupFunction(const std::string &name,
                          /*isPure*/ 0,
                          ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
       *ci = target;
-
     } else if (func->second.mReturnType == RT_FLOAT) {
       CallInfo target = {(uintptr_t)func->second.rfloat, 0, ABI_FASTCALL,
                          /*isPure*/ 0,
                          ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
       *ci = target;
-
+    } else if (func->second.mReturnType == RT_QUAD) {
+      CallInfo target = {(uintptr_t)func->second.rquad, 0, ABI_FASTCALL,
+                         /*isPure*/ 0,
+                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      *ci = target;
     } else {
       CallInfo target = {(uintptr_t)func->second.rint, 0, ABI_FASTCALL,
                          /*isPure*/ 0,
@@ -481,6 +484,10 @@ LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
   std::string func(funcname);
   CallInfo *ci = new (parent_.alloc_) CallInfo;
 
+  // We can only call functions previously defined
+  // TODO is there a need to handle functions compiled by
+  // nanojit differently than externally defined functions.
+  // Internals are FASTCALL for example
   bool known = parent_.lookupFunction(func, ci);
   if (!known)
     return nullptr;
@@ -491,9 +498,10 @@ LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
   LIns *args[MAXARGS];
   memset(&args[0], 0, sizeof(args));
 
+  // Nanojit expects parameters in reverse order
   for (int j = argc - 1; j >= 0; j--) {
     NanoAssert(j < MAXARGS); // should give a useful error msg if this fails
-    int i = j - argc + 1;
+    int i = argc - j - 1;
     NanoAssert(i >= 0 && i < argc);
     args[i] = argsin[j];
     if (args[i]->isD())
@@ -562,7 +570,7 @@ void *FunctionBuilderImpl::finalize() {
               << std::endl;
 
   } else if (returnTypeBits_ != RT_INT && returnTypeBits_ != RT_QUAD &&
-             returnTypeBits_ != RT_DOUBLE) {
+             returnTypeBits_ != RT_DOUBLE && returnTypeBits_ != RT_FLOAT) {
     std::cerr << "warning: multiple return types in fragment '" << fragName_
               << "'" << std::endl;
     return nullptr;
@@ -936,6 +944,63 @@ void NJX_set_jmp_target(NJXLInsRef jmp, NJXLInsRef target) {
   auto jmpins = unwrap_ins(jmp);
   auto targetins = unwrap_ins(target);
   jmpins->setTarget(targetins);
+}
+
+static NJXLInsRef NJX_call(NJXFunctionBuilderRef fn, const char *funcname,
+                           LOpcode opcode, NJXCallAbiKind abi, int nargs,
+                           NJXLInsRef args[]) {
+  if (nargs > MAXARGS) {
+    fprintf(stderr, "Only upto %d arguments allowed in a call\n", MAXARGS);
+    return nullptr;
+  }
+  auto builder = unwrap_function_builder(fn);
+  AbiKind abikind;
+  switch (abi) {
+  case NJXCallAbiKind::NJX_CALLABI_CDECL:
+    abikind = AbiKind::ABI_CDECL;
+    break;
+  case NJXCallAbiKind::NJX_CALLABI_FASTCALL:
+    abikind = AbiKind::ABI_FASTCALL;
+    break;
+  case NJXCallAbiKind::NJX_CALLABI_STDCALL:
+    abikind = AbiKind::ABI_STDCALL;
+    break;
+  case NJXCallAbiKind::NJX_CALLABI_THISCALL:
+    abikind = AbiKind::ABI_THISCALL;
+    break;
+  default:
+    return nullptr;
+  }
+  LIns *arguments[MAXARGS];
+  for (int i = 0; i < nargs; i++) {
+    arguments[i] = unwrap_ins(args[i]);
+  }
+  return wrap_ins(builder->call(funcname, opcode, abikind, nargs, arguments));
+}
+
+NJXLInsRef NJX_callv(NJXFunctionBuilderRef fn, const char *funcname,
+                     NJXCallAbiKind abi, int nargs, NJXLInsRef args[]) {
+  return NJX_call(fn, funcname, LIR_callv, abi, nargs, args);
+}
+NJXLInsRef NJX_calli(NJXFunctionBuilderRef fn, const char *funcname,
+                     NJXCallAbiKind abi, int nargs, NJXLInsRef args[]) {
+  return NJX_call(fn, funcname, LIR_calli, abi, nargs, args);
+}
+NJXLInsRef NJX_callq(NJXFunctionBuilderRef fn, const char *funcname,
+                     NJXCallAbiKind abi, int nargs, NJXLInsRef args[]) {
+  return NJX_call(fn, funcname, LIR_callq, abi, nargs, args);
+}
+NJXLInsRef NJX_callf(NJXFunctionBuilderRef fn, const char *funcname,
+                     NJXCallAbiKind abi, int nargs, NJXLInsRef args[]) {
+  return NJX_call(fn, funcname, LIR_callf, abi, nargs, args);
+}
+NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, const char *funcname,
+                     NJXCallAbiKind abi, int nargs, NJXLInsRef args[]) {
+  return NJX_call(fn, funcname, LIR_calld, abi, nargs, args);
+}
+
+NJXLInsRef NJX_comment(NJXFunctionBuilderRef fn, const char *s) {
+  return wrap_ins(unwrap_function_builder(fn)->comment(s));
 }
 
 /**

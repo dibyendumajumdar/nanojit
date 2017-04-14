@@ -269,18 +269,34 @@ extern NJXLInsRef NJX_livef(NJXFunctionBuilderRef fn, NJXLInsRef);
 extern NJXLInsRef NJX_lived(NJXFunctionBuilderRef fn, NJXLInsRef);
 
 enum NJXCallAbiKind {
-	NJX_CALLABI_FASTCALL,
-	NJX_CALLABI_THISCALL,
-	NJX_CALLABI_STDCALL,
-	NJX_CALLABI_CDECL
+  NJX_CALLABI_FASTCALL,
+  NJX_CALLABI_THISCALL,
+  NJX_CALLABI_STDCALL,
+  NJX_CALLABI_CDECL
 };
 
-// TODO
-extern NJXLInsRef NJX_callv(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
-extern NJXLInsRef NJX_calli(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
-extern NJXLInsRef NJX_callq(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
-extern NJXLInsRef NJX_callf(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
-extern NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+/*
+Insert calls - note maximum number of arguments is 8 on X86-64 platforms
+(details TBC) The function being called must have previously been compiled
+in Nanojit or declared as external (API TODO). If the function is not
+found then the instruction will fail and nullptr will be returned. At
+present the caller decides the Abi and the arguments - I think this is
+problematic as we should already have this when the function is defined,
+and not expect caller to provide.
+*/
+extern NJXLInsRef NJX_callv(NJXFunctionBuilderRef fn, const char *funcname,
+                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_calli(NJXFunctionBuilderRef fn, const char *funcname,
+                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_callq(NJXFunctionBuilderRef fn, const char *funcname,
+                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_callf(NJXFunctionBuilderRef fn, const char *funcname,
+                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+extern NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, const char *funcname,
+                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+
+/* Insert a comment */
+extern NJXLInsRef NJX_comment(NJXFunctionBuilderRef fn, const char *s);
 
 /**
 * Completes the function, and assembles the code.
@@ -290,7 +306,6 @@ extern NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, NJXCallAbiKind abi, int na
 * is valid, as all functions are destroyed when the Context ends.
 */
 extern void *NJX_finalize(NJXFunctionBuilderRef fn);
-
 
 #ifdef __cplusplus
 }
