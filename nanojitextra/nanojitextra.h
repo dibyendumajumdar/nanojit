@@ -285,15 +285,15 @@ problematic as we should already have this when the function is defined,
 and not expect caller to provide.
 */
 extern NJXLInsRef NJX_callv(NJXFunctionBuilderRef fn, const char *funcname,
-                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
 extern NJXLInsRef NJX_calli(NJXFunctionBuilderRef fn, const char *funcname,
-                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
 extern NJXLInsRef NJX_callq(NJXFunctionBuilderRef fn, const char *funcname,
-                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
 extern NJXLInsRef NJX_callf(NJXFunctionBuilderRef fn, const char *funcname,
-                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
 extern NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, const char *funcname,
-                            NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
+                            enum NJXCallAbiKind abi, int nargs, NJXLInsRef args[]);
 
 /* Insert a comment */
 extern NJXLInsRef NJX_comment(NJXFunctionBuilderRef fn, const char *s);
