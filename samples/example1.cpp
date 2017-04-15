@@ -129,6 +129,8 @@ int mult(NJXContextRef jit) {
 	auto x = param1;
 	auto y = param2;
 	auto result = NJX_mulq(builder, x, y);       /* result = x * y */
+    auto imm8 = NJX_immq(builder, 8);
+    auto result2 = NJX_mulq(builder, result, imm8);
 	auto ret = NJX_retq(builder, result);        /* return result */
 
 	functype f = (functype)NJX_finalize(builder);
@@ -136,7 +138,7 @@ int mult(NJXContextRef jit) {
 	NJX_destroy_function_builder(builder);
 
 	if (f != nullptr)
-		return f(100, 200) == 20000 ? 0 : 1;
+		return f(100, 200) == 40000 ? 0 : 1;
 	return 1;
 }
 

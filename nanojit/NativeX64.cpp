@@ -1078,7 +1078,11 @@ namespace nanojit
         }
 
         LIns *b = ins->oprnd2();
-        if (isImm32(b)) {
+        // Currently mulq cannot handle imm operand less than 64-bit
+        // Below the isImm32 returns true if the operand will fit into
+        // 32-bit or less so that leads to a failure in mulq.
+        // FIXME
+        if (ins->opcode() != LIR_mulq && isImm32(b)) {
             int32_t val = getImm32(b);
             if (b->isTainted() && shouldBlind(val)) {
                 if (asm_arith_imm_blind(ins))

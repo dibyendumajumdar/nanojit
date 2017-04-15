@@ -183,6 +183,31 @@ extern NJXLInsRef NJX_eqd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
 extern NJXLInsRef NJX_eqf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                           NJXLInsRef rhs);
 
+extern NJXLInsRef NJX_lti(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_lei(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_ltui(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_leui(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_ltq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_leq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_ltuq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_leuq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_ltd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_led(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_ltf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_lef(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+
 /**
 * Conversions
 */
