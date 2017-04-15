@@ -115,6 +115,36 @@ namespace nanojit
  * in the opcode length.
  */
 
+/* 
+How to read:         
+X64_addqrr  = 0xC003480000000003LL, // 64bit add r += b
+
+The instruction is in little endian order. 
+So we go right to left, byte by byte.
+
+First byte is 0x03 - which says that the istruction is 3 bytes in
+length. This is a Nanojit field, not used for encoding.
+
+So we need to look at the rightmost 3 bytes.
+
+First we see 0x48. This is the REX prefix. 
+I believe this is in binary:
+
+0100 1000
+The first 0100 identifies it as REX prefix.
+The next 4 bits are W, R, X, B parameters, 
+where W = 1 means operands are 64-bit.
+So here we are saying that the operand is 64 bits.
+
+Next byte is 0x03 - this is the instruction Op Code.
+ADD reg64, reg/mem64
+
+The next byte is 0xC0. This is the ModRM byte which starts
+with 11000000. The 6 bits are divided into 2 - each holding the
+register number. The register bits are added by the code.
+*/
+
+
     enum X64Opcode
 #if defined(_MSC_VER) && _MSC_VER >= 1400
 #pragma warning(disable:4480) // nonstandard extension used: specifying underlying type for enum
@@ -193,7 +223,9 @@ namespace nanojit
         X64_mulps   = 0xC0590F4000000004LL, // multiply float4 vector single-precision r[i] *= b[i]
         X64_addps   = 0xC0580F4000000004LL, // add float4 vector single-precision r[i] += b[i]
         X64_idiv    = 0xF8F7400000000003LL, // 32bit signed div (rax = rdx:rax/r, rdx=rdx:rax%r)
-        X64_imul    = 0xC0AF0F4000000004LL, // 32bit signed mul r *= b
+		X64_idivq   = 0xF8F7480000000003LL, // 64bit signed div (rax = rdx:rax/r, rdx=rdx:rax%r)
+		X64_imul    = 0xC0AF0F4000000004LL, // 32bit signed mul r *= b
+		X64_imulq   = 0xC0AF0F4800000004LL, // 64bit signed mul r *= b
         X64_imuli   = 0xC069400000000003LL, // 32bit signed mul r = b * immI
         X64_imul8   = 0x00C06B4000000004LL, // 32bit signed mul r = b * imm8
         X64_jmpi    = 0x0000000025FF0006LL, // jump *0(rip)
@@ -456,12 +488,15 @@ namespace nanojit
 		NIns* asm_branchi_S32(bool onFalse, LIns *cond, NIns *target);\
         void asm_div(LIns *ins);\
         void asm_div_mod(LIns *ins);\
+        void asm_divq(LIns *ins);\
+        void asm_divq_modq(LIns *ins);\
         int max_stk_used;\
         void PUSHR(Register r);\
         void POPR(Register r);\
         void NOT(Register r);\
         void NEG(Register r);\
         void IDIV(Register r);\
+        void IDIVQ(Register r);\
         void SHR(Register r);\
         void SAR(Register r);\
         void SHL(Register r);\
@@ -490,6 +525,7 @@ namespace nanojit
         void ORLRR(Register l, Register r);\
         void XORRR(Register l, Register r);\
         void IMUL(Register l, Register r);\
+        void IMULQ(Register l, Register r);\
         void CMPLR(Register l, Register r);\
         void CMPNEQPS(Register l, Register r);\
         void MOVLR(Register l, Register r);\

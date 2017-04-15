@@ -154,7 +154,8 @@ extern NJXLInsRef NJX_subf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
 /* Multiply */
 extern NJXLInsRef NJX_muli(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                            NJXLInsRef rhs);
-/* TODO - quad multiply */
+extern NJXLInsRef NJX_mulq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
 extern NJXLInsRef NJX_muld(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                            NJXLInsRef rhs);
 extern NJXLInsRef NJX_mulf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
@@ -163,7 +164,8 @@ extern NJXLInsRef NJX_mulf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
 /* Divide */
 extern NJXLInsRef NJX_divi(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                            NJXLInsRef rhs);
-/* TODO quad divide */
+extern NJXLInsRef NJX_divq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
 extern NJXLInsRef NJX_divd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                            NJXLInsRef rhs);
 extern NJXLInsRef NJX_divf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,

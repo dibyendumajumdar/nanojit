@@ -265,6 +265,12 @@ OP___(rshui,    Op2,  I,    1)  // right shift unsigned int (>>>)
 
 OP_64(addq,     Op2,  Q,    1)  // add quad
 OP_64(subq,     Op2,  Q,    1)  // subtract quad
+OP_86(mulq,     Op2,  Q,    1)  // multiply quad
+OP_86(divq,     Op2,  Q,    1)  // divide quad
+// LIR_modq is a hack.  It's only used on i386/X64.  The operand is the result
+// of a LIR_divq because on i386/X64 div and mod results are computed by the
+// same instruction.
+OP_86(modq,     Op1,  Q,    1)  // modulo quad
 
 OP_64(andq,     Op2,  Q,    1)  // bitwise-AND quad
 OP_64(orq,      Op2,  Q,    1)  // bitwise-OR quad

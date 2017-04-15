@@ -1175,7 +1175,9 @@ namespace nanojit
             case LIR_orq:   return insImmQ(c1 | c2, tainted);
             case LIR_andq:  return insImmQ(c1 & c2, tainted);
             case LIR_xorq:  return insImmQ(c1 ^ c2, tainted);
-
+#if defined NANOJIT_X64
+            case LIR_mulq:  return insImmQ(c1 * c2, tainted);
+#endif
             // Nb: LIR_rshq, LIR_lshq and LIR_rshuq aren't here because their
             // RHS is an int.  They are below.
 
@@ -1213,6 +1215,15 @@ namespace nanojit
                         break;                  // overflow
                 }
                 return insImmQ(c1 - c2, tainted);
+
+#if defined NANOJIT_IA32 || defined NANOJIT_X64
+            case LIR_divq:
+            case LIR_modq:
+                // We can't easily fold divq and modq, since folding divq makes it
+                // impossible to calculate the modq that refers to it. The
+                // frontend shouldn't emit divq and modq with constant operands.
+                NanoAssert(0);
+#endif
 
             default:
                 break;
@@ -1308,6 +1319,7 @@ namespace nanojit
             case LIR_addf4:
             case LIR_muli:
             case LIR_muld:
+            CASE86(LIR_mulq:)
             case LIR_mulf:
             case LIR_mulf4:
             case LIR_andi:
@@ -1444,6 +1456,7 @@ namespace nanojit
                     return oprnd1;
 
                 case LIR_andq:
+                CASE86(LIR_mulq:)
                     return oprnd2;
 
                 case LIR_ltuq: // unsigned < 0 -> always false
@@ -1474,6 +1487,11 @@ namespace nanojit
                     default:        break;
                     }
                 }
+#ifdef NANOJIT_X64
+                else if (v == LIR_mulq) {
+                    return oprnd1;          // x * 1 = x
+                }
+#endif
             }
 #endif  // NANOJIT_64BIT
         }
@@ -2038,6 +2056,7 @@ namespace nanojit
                 CASE64(LIR_dasq:)
                 CASE64(LIR_qasd:)
                 CASE86(LIR_modi:)
+                CASE86(LIR_modq:)
                     live.add(ins->oprnd1(), 0);
                     break;
 
@@ -2119,8 +2138,10 @@ namespace nanojit
                 case LIR_cmpnef4:
                 CASE64(LIR_addq:)
                 CASE64(LIR_subq:)
+                CASE86(LIR_mulq:)
                 CASE64(LIR_addjovq:)
                 CASE64(LIR_subjovq:)
+                CASE86(LIR_divq:)
                 case LIR_andi:
                 case LIR_ori:
                 case LIR_xori:
@@ -2563,6 +2584,7 @@ namespace nanojit
             CASESF(LIR_dhi2i:)
             case LIR_noti:
             CASE86(LIR_modi:)
+            CASE86(LIR_modq:)
             CASE64(LIR_i2q:)
             CASE64(LIR_ui2uq:)
             CASE64(LIR_q2i:)
@@ -2602,8 +2624,8 @@ namespace nanojit
 
             case LIR_addi:       CASE64(LIR_addq:)
             case LIR_subi:       CASE64(LIR_subq:)
-            case LIR_muli:
-            CASE86(LIR_divi:)
+            case LIR_muli:       CASE86(LIR_mulq:)
+            CASE86(LIR_divi:)    CASE86(LIR_divq:)
             case LIR_addd:
             case LIR_subd:
             case LIR_muld:
@@ -3718,6 +3740,7 @@ namespace nanojit
                 return sub(Interval(0, 0), of(ins->oprnd1(), lim-1));
             goto overflow;
 
+        CASE86(LIR_mulq:)
         case LIR_muli:
         case LIR_mulxovi:
         case LIR_muljovi:
@@ -3775,6 +3798,21 @@ namespace nanojit
             }
             goto worst_non_overflow;
         }
+        case LIR_modq: {
+            // TODO Not sure this is correct
+            // Dibyendu
+            NanoAssert(ins->oprnd1()->isop(LIR_divq));
+            LIns* op2 = ins->oprnd1()->oprnd2();
+            // Only handle one common case accurately, for speed and simplicity.
+            if (op2->isImmQ() && op2->immQ() != 0) {
+                int64_t y = op2->immQ();
+                int64_t absy = (y >= 0) ? y : -y;
+                // The result must smaller in magnitude than 'y'.
+                // Example:  modi [lo,hi], 5 --> [-4, 4]
+                return Interval(-absy + 1, absy - 1);
+            }
+            goto worst_non_overflow;
+        }
 #endif
 
         case LIR_cmovi: {
@@ -3817,6 +3855,7 @@ namespace nanojit
         case LIR_xori:
         case LIR_lshi:
         CASE86(LIR_divi:)
+        CASE86(LIR_divq:)
         case LIR_calli:
         case LIR_reti:
         CASE64(LIR_q2i:)
@@ -4309,6 +4348,10 @@ namespace nanojit
             checkLInsHasOpcode(op, 1, a, LIR_divi);
             formals[0] = LTy_I;
             break;
+        case LIR_modq:       // see LIRopcode.tbl for why 'mod' is unary
+            checkLInsHasOpcode(op, 1, a, LIR_divq);
+            formals[0] = LTy_Q;
+            break;
 #endif
 
 #if NJ_SOFTFLOAT_SUPPORTED
@@ -4431,6 +4474,8 @@ namespace nanojit
         case LIR_gtuq:
         case LIR_leuq:
         case LIR_geuq:
+        CASE86(LIR_mulq:)
+        CASE86(LIR_divq:)
             formals[0] = LTy_Q;
             formals[1] = LTy_Q;
             break;

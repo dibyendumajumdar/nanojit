@@ -320,10 +320,12 @@ public:
   LIns *subf(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_subf, lhs, rhs); }
 
   LIns *muli(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_muli, lhs, rhs); }
+  LIns *mulq(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_mulq, lhs, rhs); }
   LIns *muld(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_muld, lhs, rhs); }
   LIns *mulf(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_mulf, lhs, rhs); }
 
   LIns *divi(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_divi, lhs, rhs); }
+  LIns *divq(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_divq, lhs, rhs); }
   LIns *divd(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_divd, lhs, rhs); }
   LIns *divf(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_divf, lhs, rhs); }
 
@@ -802,6 +804,10 @@ NJXLInsRef NJX_muli(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
       unwrap_function_builder(fn)->muli(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
+NJXLInsRef NJX_mulq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->mulq(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
 NJXLInsRef NJX_muld(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
       unwrap_function_builder(fn)->muld(unwrap_ins(lhs), unwrap_ins((rhs))));
@@ -814,6 +820,10 @@ NJXLInsRef NJX_mulf(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
 NJXLInsRef NJX_divi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
       unwrap_function_builder(fn)->divi(unwrap_ins(lhs), unwrap_ins((rhs))));
+}
+NJXLInsRef NJX_divq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
+  return wrap_ins(
+      unwrap_function_builder(fn)->divq(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
 NJXLInsRef NJX_divd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
@@ -832,7 +842,6 @@ NJXLInsRef NJX_eqq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
       unwrap_function_builder(fn)->eqq(unwrap_ins(lhs), unwrap_ins((rhs))));
 }
-
 NJXLInsRef NJX_eqd(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {
   return wrap_ins(
       unwrap_function_builder(fn)->eqd(unwrap_ins(lhs), unwrap_ins((rhs))));

@@ -1973,6 +1973,7 @@ typedef void* (*decode_instructions_ftype) (void* start, void* end,
                 case LIR_rshq:
                 case LIR_orq:
                 case LIR_xorq:
+                CASE86(LIR_mulq:)
                     countlir_alu();
                     ins->oprnd1()->setResultLive();
                     ins->oprnd2()->setResultLive();
@@ -1992,6 +1993,7 @@ typedef void* (*decode_instructions_ftype) (void* start, void* end,
                 case LIR_rshi:
                 case LIR_rshui:
                 CASE86(LIR_divi:)
+                CASE86(LIR_divq:)
                     countlir_alu();
                     ins->oprnd1()->setResultLive();
                     ins->oprnd2()->setResultLive();
@@ -2002,6 +2004,13 @@ typedef void* (*decode_instructions_ftype) (void* start, void* end,
 
 #if defined NANOJIT_IA32 || defined NANOJIT_X64
                 CASE86(LIR_modi:)
+                    countlir_alu();
+                    ins->oprnd1()->setResultLive();
+                    if (ins->isExtant()) {
+                        asm_arith(ins);
+                    }
+                    break;
+                CASE86(LIR_modq:)
                     countlir_alu();
                     ins->oprnd1()->setResultLive();
                     if (ins->isExtant()) {

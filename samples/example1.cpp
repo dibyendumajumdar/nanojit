@@ -115,21 +115,21 @@ int calladd(NJXContextRef jit) {
 }
 
 /**
-* Tests a simple add function that takes two int values and returns their sum
+* int64 multiply function 
 */
 int mult(NJXContextRef jit) {
 	const char *name = "mult";
-	typedef int (*functype)(NJXParamType, NJXParamType);
+	typedef int64_t (*functype)(NJXParamType, NJXParamType);
 
 	// Create a function builder
 	NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
 
 	auto param1 = NJX_insert_parameter(builder); /* arg1 */
 	auto param2 = NJX_insert_parameter(builder); /* arg2 */
-	auto x = NJX_q2i(builder, param1);           /* x = (int) arg1 */
-	auto y = NJX_q2i(builder, param2);           /* y = (int) arg2 */
-	auto result = NJX_muli(builder, x, y);       /* result = x * y */
-	auto ret = NJX_reti(builder, result);        /* return result */
+	auto x = param1;
+	auto y = param2;
+	auto result = NJX_mulq(builder, x, y);       /* result = x * y */
+	auto ret = NJX_retq(builder, result);        /* return result */
 
 	functype f = (functype)NJX_finalize(builder);
 
@@ -140,6 +140,33 @@ int mult(NJXContextRef jit) {
 	return 1;
 }
 
+/**
+* int64 div function
+*/
+int div(NJXContextRef jit) {
+	const char *name = "div";
+	typedef int64_t(*functype)(NJXParamType, NJXParamType);
+
+	// Create a function builder
+	NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+
+	auto param1 = NJX_insert_parameter(builder); /* arg1 */
+	auto param2 = NJX_insert_parameter(builder); /* arg2 */
+	auto x = param1;
+	auto y = param2;
+	auto result = NJX_divq(builder, x, y);       /* result = x * y */
+	auto ret = NJX_retq(builder, result);        /* return result */
+
+	functype f = (functype)NJX_finalize(builder);
+
+	NJX_destroy_function_builder(builder);
+
+	if (f != nullptr)
+		return f(250, 100) == 2 ? 0 : 1;
+	return 1;
+}
+
+
 int main(int argc, const char *argv[]) {
 
   NJXContextRef jit = NJX_create_context(true);
@@ -149,6 +176,7 @@ int main(int argc, const char *argv[]) {
   rc += add2(jit);
   rc += add(jit);
   rc += mult(jit);
+  rc += div(jit);
   rc += calladd(jit);
 
   NJX_destroy_context(jit);

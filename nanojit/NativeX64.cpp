@@ -408,6 +408,8 @@ namespace nanojit
     void Assembler::NOT(  R r)  { emitr(X64_not,  r); asm_output("notl %s", RL(r)); }
     void Assembler::NEG(  R r)  { emitr(X64_neg,  r); asm_output("negl %s", RL(r)); }
     void Assembler::IDIV( R r)  { emitr(X64_idiv, r); asm_output("idivl edx:eax, %s",RL(r)); }
+    void Assembler::IDIVQ(R r)  { emitr(X64_idivq, r); asm_output("idivq rdx:rax, %s", RQ(r)); }
+
 
     void Assembler::SHR( R r)   { emitr(X64_shr,  r); asm_output("shrl %s, ecx", RL(r)); }
     void Assembler::SAR( R r)   { emitr(X64_sar,  r); asm_output("sarl %s, ecx", RL(r)); }
@@ -440,6 +442,8 @@ namespace nanojit
     void Assembler::ORLRR(R l, R r)     { emitrr(X64_orlrr,l,r); asm_output("orl %s, %s",  RL(l),RL(r)); }
     void Assembler::XORRR(R l, R r)     { emitrr(X64_xorrr,l,r); asm_output("xorl %s, %s", RL(l),RL(r)); }
     void Assembler::IMUL( R l, R r)     { emitrr(X64_imul, l,r); asm_output("imull %s, %s",RL(l),RL(r)); }
+    void Assembler::IMULQ(R l, R r)     { emitrr(X64_imulq, l, r); asm_output("imulq %s, %s", RQ(l), RQ(r)); }
+
     void Assembler::CMPLR(R l, R r)     { emitrr(X64_cmplr,l,r); asm_output("cmpl %s, %s", RL(l),RL(r)); }
     void Assembler::MOVLR(R l, R r)     { emitrr(X64_movlr,l,r); asm_output("movl %s, %s", RL(l),RL(r)); }
 
@@ -958,6 +962,31 @@ namespace nanojit
         }
     }
 
+    // Generates code for a LIR_divq that doesn't have a subsequent LIR_modq.
+    void Assembler::asm_divq(LIns *div) {
+        NanoAssert(div->isop(LIR_divq));
+        LIns *a = div->oprnd1();
+        LIns *b = div->oprnd2();
+
+        evictIfActive(RDX);
+        prepareResultReg(div, rmask(RAX));
+
+        Register rb = findRegFor(b, GpRegs & ~(rmask(RAX) | rmask(RDX)));
+        Register ra = a->isInReg() ? a->getReg() : RAX;
+
+        IDIVQ(rb);
+        SARQI(RDX, 63);
+        MR(RDX, RAX);
+        if (RAX != ra)
+            MR(RAX, ra);
+
+        freeResourcesOf(div);
+        if (!a->isInReg()) {
+            NanoAssert(ra == RAX);
+            findSpecificRegForUnallocated(a, RAX);
+        }
+    }
+
     // Generates code for a LIR_modi(LIR_divi(divL, divR)) sequence.
     void Assembler::asm_div_mod(LIns *mod) {
         LIns *div = mod->oprnd1();
@@ -971,11 +1000,41 @@ namespace nanojit
         prepareResultReg(mod, rmask(RDX));
         prepareResultReg(div, rmask(RAX));
 
-        Register rDivR = findRegFor(divR, GpRegs & ~(rmask(RAX)|rmask(RDX)));
+        Register rDivR = findRegFor(divR, GpRegs & ~(rmask(RAX) | rmask(RDX)));
         Register rDivL = divL->isInReg() ? divL->getReg() : RAX;
 
         IDIV(rDivR);
         SARI(RDX, 31);
+        MR(RDX, RAX);
+        if (RAX != rDivL)
+            MR(RAX, rDivL);
+
+        freeResourcesOf(mod);
+        freeResourcesOf(div);
+        if (!divL->isInReg()) {
+            NanoAssert(rDivL == RAX);
+            findSpecificRegForUnallocated(divL, RAX);
+        }
+    }
+
+    // Generates code for a LIR_modq(LIR_divq(divL, divR)) sequence.
+    void Assembler::asm_divq_modq(LIns *mod) {
+        LIns *div = mod->oprnd1();
+
+        NanoAssert(mod->isop(LIR_modq));
+        NanoAssert(div->isop(LIR_divq));
+
+        LIns *divL = div->oprnd1();
+        LIns *divR = div->oprnd2();
+
+        prepareResultReg(mod, rmask(RDX));
+        prepareResultReg(div, rmask(RAX));
+
+        Register rDivR = findRegFor(divR, GpRegs & ~(rmask(RAX)|rmask(RDX)));
+        Register rDivL = divL->isInReg() ? divL->getReg() : RAX;
+
+        IDIVQ(rDivR);
+        SARQI(RDX, 63);
         MR(RDX, RAX);
         if (RAX != rDivL)
             MR(RAX, rDivL);
@@ -1001,10 +1060,18 @@ namespace nanojit
         case LIR_modi:
             asm_div_mod(ins);
             return;
+        case LIR_modq:
+            asm_divq_modq(ins);
+            return;
         case LIR_divi:
             // Nb: if the div feeds into a mod it will be handled by
             // asm_div_mod() rather than here.
             asm_div(ins);
+            return;
+        case LIR_divq:
+            // Nb: if the divq feeds into a modq it will be handled by
+            // asm_divq_modq() rather than here.
+            asm_divq(ins);
             return;
         default:
             break;
@@ -1038,6 +1105,7 @@ namespace nanojit
         case LIR_muli:
         case LIR_muljovi:
         case LIR_mulxovi:  IMUL(rr, rb);   break;
+        case LIR_mulq:     IMULQ(rr, rb);  break;
         case LIR_xorq:     XORQRR(rr, rb); break;
         case LIR_orq:      ORQRR(rr, rb);  break;
         case LIR_andq:     ANDQRR(rr, rb); break;
