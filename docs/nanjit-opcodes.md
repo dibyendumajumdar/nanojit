@@ -198,9 +198,9 @@ Note: we don't do lt/gt/le/ge comparisons on float4 values
 | rshui|     Op2|   I|     | right shift unsigned int (>>>) |
 |addq|      Op2|   Q| 64-bit    | add quad |
 |subq|      Op2|   Q| 64-bit    | subtract quad |
-|mulq|      Op2|   I| 64-bit X86  | multiply quad |
-| divq|      Op2|   I| 64-bit X86 | divide quad |
-| modq|      Op1|   I| 64-bit X86 | modulo quad. LIR_modq is a hack.  It's only used on i386/X64.  The operand is the result of a LIR_divq because on i386/X64 div and mod results are computed by the same instruction. |
+|mulq|      Op2|   Q| 64-bit X86  | multiply quad |
+| divq|      Op2|   Q| 64-bit X86 | divide quad |
+| modq|      Op1|   Q| 64-bit X86 | modulo quad. LIR_modq is a hack.  It's only used on i386/X64.  The operand is the result of a LIR_divq because on i386/X64 div and mod results are computed by the same instruction. |
 |andq|      Op2|   Q| 64-bit    | bitwise-AND quad |
 |orq|       Op2|   Q| 64-bit    | bitwise-OR quad |
 |xorq|      Op2|   Q| 64-bit    | bitwise-XOR quad |
