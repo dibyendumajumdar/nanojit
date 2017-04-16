@@ -92,6 +92,8 @@ NJX_destroy_context(jit);
 ```
 
 ## More examples
+There are bunch of [tests](https://github.com/dibyendumajumdar/nanojit/tree/master/utils/nanojit-lirasm/lirasm/tests) that come with the lirasm tool. These are examples of LIR scripts.
+
 I am trying to use NanoJIT as the backend for a C compiler - you can see more examples of [NanoJIT LIR here](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
 
 ## Building NanoJIT
@@ -111,7 +113,7 @@ Building the project will result in a standalone NanoJIT and NanoJITExtra librar
 
 ## Using NanoJIT
 
-Once you have built the library all you need is to statically link the library, and include the nanjitextra.h header file. Note that the API is till being developed so not all API calls are exposed yet. I will update here when the API is complete.
+Once you have built the library all you need is to statically link the library, and include the nanojitextra.h header file. Note that the API is till being developed so not all API calls are exposed yet. I will update here when the API is complete.
 
 ## Documentation
 A secondary goal of this project is to create some documentation of the standalone library, and document how it can be used. 
@@ -124,4 +126,5 @@ A secondary goal of this project is to create some documentation of the standalo
 It seems that NanoJIT is one of the rare examples of a small cross-platform standalone JIT library that can be used outside of the original project. It also matters that the license is not GPL. Finally it has been in production use in ActionScript and Adobe Flash for some time so one hopes that most bugs have been ironed out.
 
 ## Why not NanoJIT?
-Support is virtually non-existent. The original architect/developer Edwin Smith is no longer at Adobe, and works at [Facebook on HHVM](https://www.youtube.com/watch?v=GT4LxjJd2Ac). Although he is not involved with NanoJIT anymore, Edwin has graciously answered some of my questions. The Adobe team do not seem to respond to [issues](https://github.com/adobe/avmplus/issues). 
+Support is virtually non-existent. The original architect/developer Edwin Smith is no longer at Adobe, and works at [Facebook on HHVM](https://www.youtube.com/watch?v=GT4LxjJd2Ac). Although he is not involved with NanoJIT anymore, Edwin has graciously answered some of my questions. The Adobe team do not seem to respond to [issues](https://github.com/adobe/avmplus/issues).
+
