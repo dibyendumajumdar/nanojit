@@ -11,6 +11,11 @@ The main unit of compilation in NanoJIT is a Fragment - which can be thought of 
 
 The documentation on NanoJIT is sparse or non-existent, making it hard to get started. I hope to provide a [simpler, documented C API](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h) to make it easier to use NanoJIT.
 
+## Project news
+
+* Development of NanoJITExtra C API is underway
+* April-2017: support for added for 64-bit integer multiply, divide and modulus operators in X64 LIR. Not available on other architectures.
+
 ## Playing with NanoJIT
 
 NanoJIT comes with a nice tool called lirasm. This is a command line tool that allows you to run a script containing NanoJIT IR instructions. For example, say you want a function that adds its two arguments. We can write this as follows:
