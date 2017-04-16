@@ -1150,6 +1150,7 @@ FragmentAssembler::assembleFragment(LirTokenStream &in, bool implicitBegin, cons
           case LIR_i2f:
           case LIR_ui2f:
           case LIR_d2i:
+          CASE86(LIR_d2q:)
           case LIR_f2i:
           case LIR_f2d:
           case LIR_f2f4:

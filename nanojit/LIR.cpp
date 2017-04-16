@@ -2592,6 +2592,7 @@ namespace nanojit
             case LIR_d2f:
             case LIR_f2d:
             case LIR_f2i:
+            CASE86(LIR_d2q:)
             CASE64(LIR_dasq:)
             CASE64(LIR_qasd:)
                 VMPI_snprintf(s, n, "%s = %s %s", formatRef(&b1, i), lirNames[op],
@@ -3861,6 +3862,7 @@ namespace nanojit
         CASE64(LIR_q2i:)
         case LIR_d2i:
         case LIR_f2i:
+        CASE86(LIR_d2q:)
         CASESF(LIR_dlo2i:)
         CASESF(LIR_dhi2i:)
         CASESF(LIR_hcalli:)
@@ -4375,6 +4377,7 @@ namespace nanojit
         case LIR_lived:
         case LIR_d2i:
         case LIR_d2f:
+        CASE86(LIR_d2q:)
         CASE64(LIR_dasq:)
             formals[0] = LTy_D;
             break;

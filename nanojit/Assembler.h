@@ -540,6 +540,9 @@ namespace nanojit
             void        asm_i2f(LIns* ins);
             void        asm_ui2f(LIns* ins);
             void        asm_f2i(LIns* ins);
+#ifdef NANOJIT_X64
+            void        asm_d2q(LIns* ins);
+#endif 
             void        asm_d2f(LIns* ins);
             void        asm_f2d(LIns* ins);
             void        asm_f2f4(LIns* ins);

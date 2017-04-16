@@ -1,3 +1,7 @@
+/**
+* The examples here illustrate how to use the
+* NanoJITExtra C API.
+*/
 #include <nanojitextra.h>
 
 #include <stdint.h>
@@ -57,6 +61,7 @@ int add2(NJXContextRef jit) {
 
 /**
 * Tests a simple add function that takes two int values and returns their sum
+* int add(int x, int y) { return x+y; }
 */
 int add(NJXContextRef jit) {
   const char *name = "add";
@@ -81,6 +86,13 @@ int add(NJXContextRef jit) {
   return 1;
 }
 
+/**
+* This example test a simple function call.
+* First we have an add funcion:
+* int add(int x, int y) { return x+y; }
+* Next we create a function that calls add().
+* int caller() { return add(100, 200); }
+*/
 int calladd(NJXContextRef jit) {
   typedef int (*adderfunc)(NJXParamType, NJXParamType);
   typedef int (*callerfunc)();
@@ -116,6 +128,7 @@ int calladd(NJXContextRef jit) {
 
 /**
 * int64 multiply function
+* int64_t mult(int64_t x, int64_t y) { return (x*y)*8LL; }
 */
 int mult(NJXContextRef jit) {
   const char *name = "mult";
@@ -128,7 +141,7 @@ int mult(NJXContextRef jit) {
   auto param2 = NJX_insert_parameter(builder); /* arg2 */
   auto x = param1;
   auto y = param2;
-  auto z = NJX_mulq(builder, x, y); /* result = x * y */
+  auto z = NJX_mulq(builder, x, y); /* z = x * y */
   // The multiplication where the RHS is an int32 is special cased
   // so this is an attempt to validate that this works correctly
   auto imm8 = NJX_immq(builder, 8);
@@ -147,6 +160,7 @@ int mult(NJXContextRef jit) {
 
 /**
 * int64 div function
+* int64_t div(int64_t x, int64_t y) { return x/y; }
 */
 int div(NJXContextRef jit) {
   const char *name = "div";
@@ -159,7 +173,7 @@ int div(NJXContextRef jit) {
   auto param2 = NJX_insert_parameter(builder); /* arg2 */
   auto x = param1;
   auto y = param2;
-  auto result = NJX_divq(builder, x, y); /* result = x * y */
+  auto result = NJX_divq(builder, x, y); /* result = x / y */
   auto ret = NJX_retq(builder, result);  /* return result */
 
   functype f = (functype)NJX_finalize(builder);

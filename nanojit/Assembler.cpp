@@ -2126,6 +2126,16 @@ typedef void* (*decode_instructions_ftype) (void* start, void* end,
                     }
                     break;
 
+#ifdef NANOJIT_X64
+                case LIR_d2q:
+                    countlir_fpu();
+                    ins->oprnd1()->setResultLive();
+                    if (ins->isExtant()) {
+                        asm_d2q(ins);
+                    }
+                    break;
+#endif
+
                 case LIR_f2f4:
                     countlir_fpu();
                     ins->oprnd1()->setResultLive();

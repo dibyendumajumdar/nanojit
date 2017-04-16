@@ -508,6 +508,7 @@ namespace nanojit
     void Assembler::CVTSS2SD(R l, R r)  { emitprr(X64_cvtss2sd,l,r); asm_output("cvtss2sd %s, %s",RQ(l),RL(r)); }
     void Assembler::CVTSD2SS(R l, R r)  { emitprr(X64_cvtsd2ss,l,r); asm_output("cvtsd2ss %s, %s",RQ(l),RQ(r)); }
     void Assembler::CVTSD2SI(R l, R r)  { emitprr(X64_cvtsd2si,l,r); asm_output("cvtsd2si %s, %s",RL(l),RQ(r)); }
+    void Assembler::CVTTSD2SQ(R l, R r)  { emitprr(X64_cvttsd2sq, l, r); asm_output("cvttsd2sq %s, %s", RQ(l), RQ(r)); }
     void Assembler::CVTTSS2SI(R l, R r) { emitprr(X64_cvttss2si,l,r);asm_output("cvttss2si %s, %s",RL(l),RQ(r));}
     void Assembler::CVTTSD2SI(R l, R r) { emitprr(X64_cvttsd2si,l,r);asm_output("cvttsd2si %s, %s",RL(l),RQ(r));}
     void Assembler::UCOMISS( R l, R r)  { emitrr(X64_ucomiss, l,r);  asm_output("ucomiss %s, %s", RQ(l),RQ(r)); }
@@ -1460,6 +1461,16 @@ namespace nanojit
         Register rr = prepareResultReg(ins, GpRegs);
         Register rb = findRegFor(a, FpRegs);
         CVTTSS2SI(rr, rb); 
+        freeResourcesOf(ins);
+    }
+
+    void Assembler::asm_d2q(LIns *ins) {
+        LIns *a = ins->oprnd1();
+        NanoAssert(ins->isQ() && a->isD());
+
+        Register rr = prepareResultReg(ins, GpRegs);
+        Register rb = findRegFor(a, FpRegs);
+        CVTTSD2SQ(rr, rb);
         freeResourcesOf(ins);
     }
 

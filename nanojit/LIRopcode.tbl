@@ -381,7 +381,7 @@ OP___(d2f,      Op1,  F,    1)  // convert double to float (no exceptions raised
 // round to nearest examples: 1.9 -> 2, 1.1 -> 1, -1.1 -> -1, -1.9 -> -2
 OP___(d2i,      Op1,  I,    1)  // convert double to int (no exceptions raised)
 OP___(f2i,      Op1,  I,    1)  // convert float to int (no exceptions raised)
-
+OP_86(d2q,      Op1,  Q,    1)  // convert double to quad (no exceptions raised?)
 OP___(f2f4,     Op1, F4,    1)  // convert float to float4 (no exceptions raised) - essentially copies the float across all elements
 OP___(ffff2f4,  Op4, F4,    1)  // convert float to float4 (no exceptions raised) - essentially copies the float across all elements
 OP___(f4x,      Op1,  F,    1)  // extract first float from a float4 

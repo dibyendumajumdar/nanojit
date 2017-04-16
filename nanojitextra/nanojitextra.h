@@ -84,6 +84,9 @@ extern NJXLInsRef NJX_reti(NJXFunctionBuilderRef fn, NJXLInsRef result);
 */
 extern NJXLInsRef NJX_retd(NJXFunctionBuilderRef fn, NJXLInsRef result);
 
+/* Return float */
+extern NJXLInsRef NJX_retf(NJXFunctionBuilderRef fn, NJXLInsRef result);
+
 /**
 * Adds a quad return instruction.
 */
@@ -223,6 +226,7 @@ extern NJXLInsRef NJX_f2d(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_d2f(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_d2i(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_f2i(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_d2q(NJXFunctionBuilderRef fn, NJXLInsRef q);
 
 /**
 * Inserts a label at current position, no code is emitted for this

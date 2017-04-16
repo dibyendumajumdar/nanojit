@@ -211,6 +211,7 @@ register number. The register bits are added by the code.
         X64_cvtss2sd= 0xC05A0F40F3000005LL, // convert float to double r = (double) b
         X64_cvtsd2ss= 0xC05A0F40F2000005LL, // convert double to float r = (float) b
         X64_cvtsd2si= 0xC02D0F40F2000005LL, // convert double to int32 with rounding r = (int32) b
+        X64_cvttsd2sq=0xC02C0F48F2000005LL, // convert double to int64 with rounding r = (int64) b
         X64_cvttsd2si=0xC02C0F40F2000005LL, // convert double to int32 r = (int32) b
         X64_cvttss2si=0xC02C0F40F3000005LL, // convert float to int32 r = (int32) b
         X64_divsd   = 0xC05E0F40F2000005LL, // divide scalar double r /= b
@@ -581,6 +582,7 @@ register number. The register bits are added by the code.
         void CVTSS2SD(Register l, Register r);\
         void CVTSD2SS(Register l, Register r);\
         void CVTSD2SI(Register l, Register r);\
+        void CVTTSD2SQ(Register l, Register r);\
         void CVTTSD2SI(Register l, Register r);\
         void CVTTSS2SI(Register l, Register r);\
         void CVTSI2SS(Register l, Register r);\
