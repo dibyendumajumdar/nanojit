@@ -14,7 +14,7 @@ The documentation on NanoJIT is sparse or non-existent, making it hard to get st
 ## Project news
 
 * Development of NanoJITExtra C API is underway
-* April-2017: support for added for 64-bit integer multiply, divide and modulus operators in X64 LIR. Not available on other architectures.
+* April-2017: Added support for 64-bit integer multiply, divide and modulus operators in X64 LIR. Not available on other architectures.
 
 ## Playing with NanoJIT
 
