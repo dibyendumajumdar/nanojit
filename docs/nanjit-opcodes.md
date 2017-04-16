@@ -292,6 +292,7 @@ The rounding behavior of LIR_d2i is platform specific.
 | f2d|       Op1|   D|     | convert float to double |
 | d2f|       Op1|   F|     | convert double to float (no exceptions raised) |
 | d2i|       Op1|   I|     | convert double to int (no exceptions raised) |
+| d2q|       Op1|   Q| 64-bit X86 | convert double to quad (no exceptions raised?) |
 | f2i|       Op1|   I|     | convert float to int (no exceptions raised) |
 | f2f4|      Op1|  F4|     | convert float to float4 (no exceptions raised) - essentially copies the float across all elements |
 | ffff2f4|   Op4|  F4|     | convert float to float4 (no exceptions raised) - essentially copies the float across all elements |
