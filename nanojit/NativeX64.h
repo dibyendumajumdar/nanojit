@@ -223,10 +223,11 @@ register number. The register bits are added by the code.
         X64_mulps   = 0xC0590F4000000004LL, // multiply float4 vector single-precision r[i] *= b[i]
         X64_addps   = 0xC0580F4000000004LL, // add float4 vector single-precision r[i] += b[i]
         X64_idiv    = 0xF8F7400000000003LL, // 32bit signed div (rax = rdx:rax/r, rdx=rdx:rax%r)
-		X64_idivq   = 0xF8F7480000000003LL, // 64bit signed div (rax = rdx:rax/r, rdx=rdx:rax%r)
-		X64_imul    = 0xC0AF0F4000000004LL, // 32bit signed mul r *= b
-		X64_imulq   = 0xC0AF0F4800000004LL, // 64bit signed mul r *= b
+        X64_idivq   = 0xF8F7480000000003LL, // 64bit signed div (rax = rdx:rax/r, rdx=rdx:rax%r)
+        X64_imul    = 0xC0AF0F4000000004LL, // 32bit signed mul r *= b
+        X64_imulq   = 0xC0AF0F4800000004LL, // 64bit signed mul r *= b
         X64_imuli   = 0xC069400000000003LL, // 32bit signed mul r = b * immI
+        X64_imulqi  = 0xC069480000000003LL, // 64bit signed mul r = b * immI
         X64_imul8   = 0x00C06B4000000004LL, // 32bit signed mul r = b * imm8
         X64_jmpi    = 0x0000000025FF0006LL, // jump *0(rip)
         X64_jmp     = 0x00000000E9000005LL, // jump near rel32
@@ -617,6 +618,7 @@ register number. The register bits are added by the code.
         void XORQR8(Register r, int32_t i8);\
         void CMPQR8(Register r, int32_t i8);\
         void IMULI(Register l, Register r, int32_t i32);\
+        void IMULQI(Register l, Register r, int32_t i32);\
         void MOVQI(Register r, uint64_t u64);\
         void LEARIP(Register r, int32_t d);\
         void LEALRM(Register r, int d, Register b);\

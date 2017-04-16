@@ -115,59 +115,61 @@ int calladd(NJXContextRef jit) {
 }
 
 /**
-* int64 multiply function 
+* int64 multiply function
 */
 int mult(NJXContextRef jit) {
-	const char *name = "mult";
-	typedef int64_t (*functype)(NJXParamType, NJXParamType);
+  const char *name = "mult";
+  typedef int64_t (*functype)(NJXParamType, NJXParamType);
 
-	// Create a function builder
-	NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+  // Create a function builder
+  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
 
-	auto param1 = NJX_insert_parameter(builder); /* arg1 */
-	auto param2 = NJX_insert_parameter(builder); /* arg2 */
-	auto x = param1;
-	auto y = param2;
-	auto result = NJX_mulq(builder, x, y);       /* result = x * y */
-    auto imm8 = NJX_immq(builder, 8);
-    auto result2 = NJX_mulq(builder, result, imm8);
-	auto ret = NJX_retq(builder, result);        /* return result */
+  auto param1 = NJX_insert_parameter(builder); /* arg1 */
+  auto param2 = NJX_insert_parameter(builder); /* arg2 */
+  auto x = param1;
+  auto y = param2;
+  auto z = NJX_mulq(builder, x, y); /* result = x * y */
+  // The multiplication where the RHS is an int32 is special cased
+  // so this is an attempt to validate that this works correctly
+  auto imm8 = NJX_immq(builder, 8);
+  auto result = NJX_mulq(builder, z, imm8);
+  auto ret = NJX_retq(builder, result); /* return result */
 
-	functype f = (functype)NJX_finalize(builder);
+  functype f = (functype)NJX_finalize(builder);
 
-	NJX_destroy_function_builder(builder);
+  NJX_destroy_function_builder(builder);
 
-	if (f != nullptr)
-		return f(100, 200) == 40000 ? 0 : 1;
-	return 1;
+  if (f != nullptr) {
+    return f(100, 200) == 160000 ? 0 : 1;
+  }
+  return 1;
 }
 
 /**
 * int64 div function
 */
 int div(NJXContextRef jit) {
-	const char *name = "div";
-	typedef int64_t(*functype)(NJXParamType, NJXParamType);
+  const char *name = "div";
+  typedef int64_t (*functype)(NJXParamType, NJXParamType);
 
-	// Create a function builder
-	NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+  // Create a function builder
+  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
 
-	auto param1 = NJX_insert_parameter(builder); /* arg1 */
-	auto param2 = NJX_insert_parameter(builder); /* arg2 */
-	auto x = param1;
-	auto y = param2;
-	auto result = NJX_divq(builder, x, y);       /* result = x * y */
-	auto ret = NJX_retq(builder, result);        /* return result */
+  auto param1 = NJX_insert_parameter(builder); /* arg1 */
+  auto param2 = NJX_insert_parameter(builder); /* arg2 */
+  auto x = param1;
+  auto y = param2;
+  auto result = NJX_divq(builder, x, y); /* result = x * y */
+  auto ret = NJX_retq(builder, result);  /* return result */
 
-	functype f = (functype)NJX_finalize(builder);
+  functype f = (functype)NJX_finalize(builder);
 
-	NJX_destroy_function_builder(builder);
+  NJX_destroy_function_builder(builder);
 
-	if (f != nullptr)
-		return f(250, 100) == 2 ? 0 : 1;
-	return 1;
+  if (f != nullptr)
+    return f(250, 100) == 2 ? 0 : 1;
+  return 1;
 }
-
 
 int main(int argc, const char *argv[]) {
 

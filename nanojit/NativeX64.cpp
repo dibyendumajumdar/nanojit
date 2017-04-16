@@ -572,6 +572,7 @@ namespace nanojit
     void Assembler::CMPQR8(R r, I32 i8)     { emitr_imm8(X64_cmpqr8,r,i8); asm_output("cmpq %s, %d",RQ(r),i8); }
 
     void Assembler::IMULI(R l, R r, I32 i32)    { emitrr_imm(X64_imuli,l,r,i32); asm_output("imuli %s, %s, %d",RL(l),RL(r),i32); }
+    void Assembler::IMULQI(R l, R r, I32 i32)   { emitrr_imm(X64_imulqi, l, r, i32); asm_output("imulqi %s, %s, %d", RQ(l), RQ(r), i32); }
 
     void Assembler::MOVQI(R r, U64 u64)         { emitr_imm64(X64_movqi,r,u64); asm_output("movq %s, %p",RQ(r),(void*)u64); }
 
@@ -821,6 +822,16 @@ namespace nanojit
             // need the MR(rr, ra) after the IMULI.
             beginOp1Regs(ins, GpRegs, rr, ra);
             IMULI(rr, ra, imm);
+            endOpRegs(ins, rr, ra);
+            return;
+        }
+
+        // Quad multiply with where RHS is 32bit integer
+        if (op == LIR_mulq) {
+            // Special case: imulq-by-imm has true 3-addr form.  So we don't
+            // need the MR(rr, ra) after the IMULQI.
+            beginOp1Regs(ins, GpRegs, rr, ra);
+            IMULQI(rr, ra, imm);
             endOpRegs(ins, rr, ra);
             return;
         }
@@ -1078,11 +1089,10 @@ namespace nanojit
         }
 
         LIns *b = ins->oprnd2();
-        // Currently mulq cannot handle imm operand less than 64-bit
         // Below the isImm32 returns true if the operand will fit into
-        // 32-bit or less so that leads to a failure in mulq.
-        // FIXME
-        if (ins->opcode() != LIR_mulq && isImm32(b)) {
+        // 32-bit or less so that leads special case where the operand
+        // can be embedded into the instruction
+        if (isImm32(b)) {
             int32_t val = getImm32(b);
             if (b->isTainted() && shouldBlind(val)) {
                 if (asm_arith_imm_blind(ins))
