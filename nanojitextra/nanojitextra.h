@@ -174,6 +174,19 @@ extern NJXLInsRef NJX_divd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
 extern NJXLInsRef NJX_divf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                            NJXLInsRef rhs);
 
+/* Modulus */
+extern NJXLInsRef NJX_modi(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_modq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+
+/* Negate */
+// NYI extern NJXLInsRef NJX_negq(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_negi(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_negf(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_negd(NJXFunctionBuilderRef fn, NJXLInsRef q);
+
+
 /**
 * Tests lhs == rhs, result is 1 or 0
 */
@@ -209,6 +222,31 @@ extern NJXLInsRef NJX_led(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
 extern NJXLInsRef NJX_ltf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                           NJXLInsRef rhs);
 extern NJXLInsRef NJX_lef(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+
+extern NJXLInsRef NJX_gti(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_gei(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_gtui(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_geui(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_gtq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_geq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_gtuq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_geuq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                           NJXLInsRef rhs);
+extern NJXLInsRef NJX_gtd(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_ged(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_gtf(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
+                          NJXLInsRef rhs);
+extern NJXLInsRef NJX_gef(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                           NJXLInsRef rhs);
 
 /**
@@ -252,6 +290,29 @@ extern NJXLInsRef NJX_cbr_true(NJXFunctionBuilderRef fn, NJXLInsRef cond,
                                NJXLInsRef to);
 extern NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond,
                                 NJXLInsRef to);
+
+/**
+* Inserts a conditional to execute and branches to execute if
+* the condition is true and false respectively.
+*/
+extern NJXLInsRef NJX_cbr(NJXFunctionBuilderRef fn, NJXLInsRef cond,
+                          NJXLInsRef iftrue, NJXLInsRef iffalse, bool use_cmov);
+
+/**
+* Generates a C switch like instruction, where branches
+* are taken based on the value of an integer index.
+* size says how many possible values index can take
+* Note that each of the caller must set the
+* jump targets for each value using NJX_set_switch_target().
+*/
+extern NJXLInsRef NJX_switch(NJXFunctionBuilderRef fn, NJXLInsRef index,
+                             int32_t size);
+
+/**
+* Sets the jump target for a switch instruction.
+*/
+extern void NJX_set_switch_target(NJXLInsRef switchins, uint32_t index,
+                                  NJXLInsRef target);
 
 /**
 * Sets the target of a jump instruction
