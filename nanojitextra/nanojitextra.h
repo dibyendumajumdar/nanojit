@@ -186,6 +186,21 @@ extern NJXLInsRef NJX_negi(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_negf(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_negd(NJXFunctionBuilderRef fn, NJXLInsRef q);
 
+/* Bitwise Operators */
+// NYI extern NJXLInsRef NJX_notq(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_noti(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_andi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_andq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_ori(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_orq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_xori(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_xorq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_lshi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_lshq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_rshi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_rshq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_rshui(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
+extern NJXLInsRef NJX_rshuq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
 
 /**
 * Tests lhs == rhs, result is 1 or 0
