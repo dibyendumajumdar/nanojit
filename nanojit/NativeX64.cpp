@@ -406,7 +406,9 @@ namespace nanojit
     void Assembler::PUSHR(R r)  { emitr(X64_pushr,r); asm_output("push %s", RQ(r)); }
     void Assembler::POPR( R r)  { emitr(X64_popr, r); asm_output("pop %s",  RQ(r)); }
     void Assembler::NOT(  R r)  { emitr(X64_not,  r); asm_output("notl %s", RL(r)); }
+    void Assembler::NOTQ(R r)   { emitr(X64_notq, r); asm_output("notq %s", RQ(r)); }
     void Assembler::NEG(  R r)  { emitr(X64_neg,  r); asm_output("negl %s", RL(r)); }
+    void Assembler::NEGQ(R r)   { emitr(X64_negq, r); asm_output("negq %s", RQ(r)); }
     void Assembler::IDIV( R r)  { emitr(X64_idiv, r); asm_output("idivl edx:eax, %s",RL(r)); }
     void Assembler::IDIVQ(R r)  { emitr(X64_idivq, r); asm_output("idivq rdx:rax, %s", RQ(r)); }
 
@@ -1167,6 +1169,12 @@ namespace nanojit
 
         if (ins->isop(LIR_noti))
             NOT(rr);
+#ifdef NANOJIT_X64
+        else if (ins->isop(LIR_notq))
+            NOTQ(rr);
+        else if (ins->isop(LIR_negq))
+            NEGQ(rr);
+#endif
         else
             NEG(rr);
         if (rr != ra)

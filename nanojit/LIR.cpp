@@ -968,12 +968,26 @@ namespace nanojit
             if (v == oprnd->opcode())
                 return oprnd->oprnd1();
             break;
+#ifdef NANOJIT_X64
+        case LIR_notq:
+            if (oprnd->isImmQ())
+                return insImmQ(~oprnd->immQ(), oprnd->isTainted());
+            goto involution;
+#endif
         case LIR_negi:
             if (oprnd->isImmI())
                 return insImmI(-oprnd->immI(), oprnd->isTainted());
             if (oprnd->isop(LIR_subi)) // -(a-b) = b-a
                 return out->ins2(LIR_subi, oprnd->oprnd2(), oprnd->oprnd1());
             goto involution;
+#ifdef NANOJIT_X64
+        case LIR_negq:
+            if (oprnd->isImmQ())
+                return insImmQ(-oprnd->immQ(), oprnd->isTainted());
+            if (oprnd->isop(LIR_subq)) // -(a-b) = b-a
+                return out->ins2(LIR_subq, oprnd->oprnd2(), oprnd->oprnd1());
+            goto involution;
+#endif
         case LIR_negd:
             if (oprnd->isImmD())
                 return insImmD(-oprnd->immD(), oprnd->isTainted());
@@ -2019,7 +2033,9 @@ namespace nanojit
 				case LIR_brsavpc:
                 case LIR_jtbl:
                 case LIR_negi:
+                CASE86(LIR_negq:)
                 case LIR_noti:
+                CASE86(LIR_notq:)
                 case LIR_negd:
                 case LIR_negf:
                 case LIR_negf4:
@@ -2557,6 +2573,7 @@ namespace nanojit
 
             CASESF(LIR_hcalli:)
             case LIR_negi:
+            CASE86(LIR_negq:)
             case LIR_negd:
             case LIR_negf:
             case LIR_negf4:
@@ -2583,6 +2600,7 @@ namespace nanojit
             CASESF(LIR_dlo2i:)
             CASESF(LIR_dhi2i:)
             case LIR_noti:
+            CASE86(LIR_notq:)
             CASE86(LIR_modi:)
             CASE86(LIR_modq:)
             CASE64(LIR_i2q:)
@@ -3736,6 +3754,7 @@ namespace nanojit
                 return sub(of(ins->oprnd1(), lim-1), of(ins->oprnd2(), lim-1));
             goto overflow;
 
+        CASE86(LIR_negq:) // TODO Dibyendu: is this correct?
         case LIR_negi:
             if (lim > 0)
                 return sub(Interval(0, 0), of(ins->oprnd1(), lim-1));
@@ -3852,6 +3871,7 @@ namespace nanojit
         CASE32(LIR_paramp:)
         case LIR_ldi:
         case LIR_noti:
+        CASE86(LIR_notq:)
         case LIR_ori:
         case LIR_xori:
         case LIR_lshi:
@@ -4340,6 +4360,8 @@ namespace nanojit
         case LIR_q2i:
         case LIR_qasd:
         case LIR_retq:
+        CASE86(LIR_negq:)
+        CASE86(LIR_notq:)
         case LIR_liveq:
             formals[0] = LTy_Q;
             break;

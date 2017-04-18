@@ -1134,10 +1134,12 @@ FragmentAssembler::assembleFragment(LirTokenStream &in, bool implicitBegin, cons
           case LIR_livef:
           case LIR_livef4:
           case LIR_negi:
+          CASE86(LIR_negq:)
           case LIR_negd:
           case LIR_negf:
           case LIR_negf4:
           case LIR_noti:
+          CASE86(LIR_notq:)
           CASESF(LIR_dlo2i:)
           CASESF(LIR_dhi2i:)
           CASE64(LIR_q2i:)
@@ -1162,6 +1164,7 @@ FragmentAssembler::assembleFragment(LirTokenStream &in, bool implicitBegin, cons
 #if defined NANOJIT_IA32 || defined NANOJIT_X64
           case LIR_modi:
 #endif
+          CASE86(LIR_modq:)
             need(1);
             ins = mLir->ins1(mOpcode,
                              ref(mTokens[0]));
@@ -1173,6 +1176,8 @@ FragmentAssembler::assembleFragment(LirTokenStream &in, bool implicitBegin, cons
 #if defined NANOJIT_IA32 || defined NANOJIT_X64
           case LIR_divi:
 #endif
+          CASE86(LIR_mulq:)
+          CASE86(LIR_divq:)
           case LIR_addd:
           case LIR_subd:
           case LIR_muld:

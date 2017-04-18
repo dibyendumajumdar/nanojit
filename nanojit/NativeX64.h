@@ -302,6 +302,7 @@ register number. The register bits are added by the code.
         X64_movsx8m = 0x80BE0F4000000004LL, // sign extend i8 load to i32 r <- [b+d32]
         X64_movsx16m= 0x80BF0F4000000004LL, // sign extend i16 load to i32 r <- [b+d32]
         X64_neg     = 0xD8F7400000000003LL, // 32bit two's compliment b = -b
+        X64_negq    = 0xD8F7480000000003LL, // 64bit two's compliment b = -b
         X64_nop1    = 0x9000000000000001LL, // one byte NOP
         X64_nop2    = 0x9066000000000002LL, // two byte NOP
         X64_nop3    = 0x001F0F0000000003LL, // three byte NOP
@@ -310,6 +311,7 @@ register number. The register bits are added by the code.
         X64_nop6    = 0x0000441F0F660006LL, // six byte NOP
         X64_nop7    = 0x00000000801F0F07LL, // seven byte NOP
         X64_not     = 0xD0F7400000000003LL, // 32bit ones compliment b = ~b
+        X64_notq    = 0xD0F7480000000003LL, // 64bit ones compliment b = ~b
         X64_orlrr   = 0xC00B400000000003LL, // 32bit or r |= b
         X64_orqrr   = 0xC00B480000000003LL, // 64bit or r |= b
         X64_popr    = 0x5840000000000002LL, // 64bit pop r <- [rsp++]
@@ -496,7 +498,9 @@ register number. The register bits are added by the code.
         void PUSHR(Register r);\
         void POPR(Register r);\
         void NOT(Register r);\
+        void NOTQ(Register r);\
         void NEG(Register r);\
+        void NEGQ(Register r);\
         void IDIV(Register r);\
         void IDIVQ(Register r);\
         void SHR(Register r);\

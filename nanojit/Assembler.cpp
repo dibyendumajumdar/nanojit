@@ -1956,7 +1956,9 @@ typedef void* (*decode_instructions_ftype) (void* start, void* end,
                     break;
 
                 case LIR_negi:
+                CASE86(LIR_negq:)
                 case LIR_noti:
+                CASE86(LIR_notq:)
                     countlir_alu();
                     ins->oprnd1()->setResultLive();
                     if (ins->isExtant()) {

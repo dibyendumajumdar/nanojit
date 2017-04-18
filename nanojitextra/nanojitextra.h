@@ -181,13 +181,13 @@ extern NJXLInsRef NJX_modq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                            NJXLInsRef rhs);
 
 /* Negate */
-// NYI extern NJXLInsRef NJX_negq(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_negq(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_negi(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_negf(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_negd(NJXFunctionBuilderRef fn, NJXLInsRef q);
 
 /* Bitwise Operators */
-// NYI extern NJXLInsRef NJX_notq(NJXFunctionBuilderRef fn, NJXLInsRef q);
+extern NJXLInsRef NJX_notq(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_noti(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_andi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);
 extern NJXLInsRef NJX_andq(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs);

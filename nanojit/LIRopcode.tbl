@@ -242,6 +242,7 @@ OP___(eqf4,     Op2,  I,    1)  // float4 equality
 // Arithmetic
 //---------------------------------------------------------------------------
 OP___(negi,     Op1,  I,    1)  // negate int
+OP_86(negq,     Op1,  Q,    1)  // negate quad
 OP___(addi,     Op2,  I,    1)  // add int
 OP___(subi,     Op2,  I,    1)  // subtract int
 OP___(muli,     Op2,  I,    1)  // multiply int
@@ -252,6 +253,7 @@ OP_86(divi,     Op2,  I,    1)  // divide int
 OP_86(modi,     Op1,  I,    1)  // modulo int
 
 OP___(noti,     Op1,  I,    1)  // bitwise-NOT int
+OP_86(notq,     Op1,  Q,    1)  // bitwise-NOT quad
 OP___(andi,     Op2,  I,    1)  // bitwise-AND int
 OP___(ori,      Op2,  I,    1)  // bitwise-OR int
 OP___(xori,     Op2,  I,    1)  // bitwise-XOR int
