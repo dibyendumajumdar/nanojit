@@ -94,7 +94,7 @@ extern void *NJX_get_function_by_name(NJXContextRef, const char *name);
 */
 extern NJXFunctionBuilderRef
 NJX_create_function_builder(NJXContextRef context, const char *name,
-                            NJXValueKind return_type, const NJXValueKind *args,
+                            enum NJXValueKind return_type, const enum NJXValueKind *args,
                             int argc, int optimize);
 
 /**
