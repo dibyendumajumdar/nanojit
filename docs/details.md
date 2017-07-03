@@ -2,13 +2,24 @@
 
 ## Function parameters
 
+### JIT Functions can only take integer/pointer arguments
+At least on X64 a limitaton in NanoJIT is that JIT functions can only take a limited number of parameters. On Win64 this is
+4 integer or pointer arguments. On UNIX platforms it is 6 parameters, again limited to integer or pointer values. These
+limitations arise as the current implementation only looks at the first 4/6 registers for parameters as per the X64 ABI.
+
+A JIT function should be able to return a double or float though - but this is something that is to be verified.
+
+### External C functions can only take upto 8 arguments
+External C functions called from JIT code can only take upto 8 arguments, although in this case it it possible to
+to pass double or float values. Return values can also be double or float.
+
 ### All parameters are fixed size
 The LIR writer does not allow specifying whether a parameter is 32-bit or 64-bit. Apparently the size is set automatically based 
 on machine architecture. See mozilla [bug 541232](https://bugzilla.mozilla.org/show_bug.cgi?id=541232). 
 
-This limitation means that function parameters are always the architecture word size, i.e. 64-bit on 64-bit platforms, and 32-bit on 32-bit platforms. This means that you cannot directly pass a double as a parameter on a 32-bit platform! However the workaround is simple, just pass a pointer to a struct that contains the arguments. Of course Nanojit does not understand structs so you need to call the relevant memory load/store operations.
+This limitation means that for a JITed function, parameters are always the architecture word size, i.e. 64-bit on 64-bit platforms, and 32-bit on 32-bit platforms. As described above, a JITed function can only accept integer or pointer arguments therefre if you need to pass double values, just pass a pointer to a struct that contains the arguments. Of course Nanojit does not understand structs so you need to call the relevant memory load/store operations.
 
-### Livesness requirements 
+### Liveness requirements 
 I found it necessary to copy function parameters to the stack, as the parameter value appears to not be preserved across jumps. 
 
 Update: I understand from Edwin Smith (original Nanojit architect) that the reason why a parameter may be getting clobberred is because:
@@ -23,11 +34,6 @@ being used at all.
 point, and used inside a loop, then it's live range must cover the whole loop.
 the frontend compiler must insert LIR_live at the loop jumps (back edges)
 to extend the live range. see LIR_livei, livep, etc..
-
-### Number of parameters is limited
-At least with the X86_64 backend it seems that Nanojit only supports passing parameters via registers, so that means at most 4-5 parameters can be passed depending upon the OS. So probably best to design JITed functions to take a pointer to struct argument. 
-
-More details to follow on limitations in this area.
 
 ## Jumps and Labels
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
