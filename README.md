@@ -13,7 +13,6 @@ The documentation on NanoJIT is sparse or non-existent, making it hard to get st
 
 ## Project news
 
-* NOTE: Due to some other commitments work on this project will resume mid June.
 * Development of NanoJITExtra C API is underway
 * April-2017: Added support for 64-bit integer multiply, divide and modulus operators in X64 LIR. Not available on other architectures.
 
@@ -75,12 +74,11 @@ const char *name = "add";
 typedef int (*functype)(NJXParamType, NJXParamType);
 
 // Create a function builder
-NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+NJXValueKind args[2] = {NJXValueKind_I, NJXValueKind_I};
+NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, NJXValueKind_I, args, 2, true);
 
-auto param1 = NJX_insert_parameter(builder); /* arg1 */
-auto param2 = NJX_insert_parameter(builder); /* arg2 */
-auto x = NJX_q2i(builder, param1);           /* x = (int) arg1 */
-auto y = NJX_q2i(builder, param2);           /* y = (int) arg2 */
+auto x = NJX_get_parameter(builder, 0); /* arg1 */
+auto y = NJX_get_parameter(builder, 1); /* arg2 */
 auto result = NJX_addi(builder, x, y);       /* result = x + y */
 auto ret = NJX_reti(builder, result);        /* return result */
 
