@@ -361,8 +361,8 @@ public:
   LIns *divd(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_divd, lhs, rhs); }
   LIns *divf(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_divf, lhs, rhs); }
 
-  LIns *modi(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_modi, lhs, rhs); }
-  LIns *modq(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_modq, lhs, rhs); }
+  LIns *modi(LIns *lhs, LIns *rhs) { return lir_->ins1(LIR_modi, lir_->ins2(LIR_divi, lhs, rhs)); }
+  LIns *modq(LIns *lhs, LIns *rhs) { return lir_->ins1(LIR_modq, lir_->ins2(LIR_divq, lhs, rhs)); }
 
   LIns *eqi(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqi, lhs, rhs); }
   LIns *eqq(LIns *lhs, LIns *rhs) { return lir_->ins2(LIR_eqq, lhs, rhs); }
