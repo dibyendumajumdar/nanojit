@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 
 #ifndef NANOJIT_64BIT
 #error This code is only supported on 64-bit architecture
@@ -28,7 +29,7 @@ typedef double(FASTCALL *RetDouble)();
 typedef float(FASTCALL *RetFloat)();
 
 struct Function {
-  const char *name;
+  std::string name;
   struct nanojit::CallInfo callInfo;
 };
 
@@ -42,9 +43,11 @@ public:
   };
   ReturnType mReturnType;
   Fragment *fragptr;
+  uint32_t typeSig;
 };
 
 typedef std::map<std::string, LirasmFragment> Fragments;
+typedef std::vector<Function> Functions;
 
 // Equivalent to Lirasm
 class NanoJitContextImpl {
@@ -118,6 +121,8 @@ public:
   // LogControl, a class for controlling and routing debug output
   LogControl logc_;
 
+  Functions external_functions_;
+
 public:
   NanoJitContextImpl(bool verbose, Config config);
   ~NanoJitContextImpl();
@@ -125,8 +130,15 @@ public:
   LirasmFragment *get_fragment(const char *name);
 
   // Lookup a function in fragments; populate CallInfo if found
-  // Returns true if found
-  bool lookupFunction(const std::string &name, CallInfo *&ci);
+  // Returns 0 if not found
+  // Returns 1 if external
+  // Returns 2 if internal
+  int lookupFunction(const std::string &name, CallInfo *&ci);
+
+  // Register an external function - assumed to be C calling
+  // convention
+  void registerFunction(const std::string &name, void *fptr, ArgType retval,
+                        const ArgType *args, int argc);
 };
 
 /**
@@ -179,12 +191,19 @@ private:
 
   int32_t paramCount_;
 
+  ArgType rvalue_;
+
+  ArgType args_[MAXARGS];
+
+  LIns *params_[MAXARGS];
+
 private:
   static uint32_t sProfId;
 
 public:
   FunctionBuilderImpl(NanoJitContextImpl &parent,
-                      const std::string &fragmentName, bool optimize);
+                      const std::string &fragmentName, ArgType rvalue,
+                      const ArgType *args, int argc, bool optimize);
   ~FunctionBuilderImpl();
 
   /**
@@ -241,6 +260,8 @@ public:
   * used as function parameters.
   */
   LIns *insertParameter() { return lir_->insParam(paramCount_++, 0); }
+
+  LIns *getParameter(int pos);
 
   /**
   * Insert a label at current position
@@ -475,45 +496,77 @@ LirasmFragment *NanoJitContextImpl::get_fragment(const char *name) {
   return &result->second;
 }
 
-bool NanoJitContextImpl::lookupFunction(const std::string &name,
-                                        CallInfo *&ci) {
+void NanoJitContextImpl::registerFunction(const std::string &name, void *fptr,
+                                          ArgType retval, const ArgType *args,
+                                          int argc) {
+  for (int i = 0; i < external_functions_.size(); i++) {
+    auto &function = external_functions_[i];
+    if (function.name == name) {
+      return;
+    }
+  }
+  uint32_t typeSig = CallInfo::typeSigN(retval, argc, args);
+  Function function;
+  function.name = name;
+  function.callInfo._address = (uintptr_t)fptr;
+  function.callInfo._name = "";
+  function.callInfo._typesig = typeSig;
+  function.callInfo._storeAccSet = ACCSET_STORE_ANY;
+  function.callInfo._abi = nanojit::ABI_CDECL; // Assumed to be C calling
+                                               // convention, maybe this should
+                                               // be a parameter
+  function.callInfo._isPure = 0;
+  external_functions_.push_back(function);
+}
+
+int NanoJitContextImpl::lookupFunction(const std::string &name, CallInfo *&ci) {
+
+  const size_t nfuns = external_functions_.size();
+  for (size_t i = 0; i < nfuns; i++) {
+    if (name == external_functions_[i].name) {
+      *ci = external_functions_[i].callInfo;
+      return 1;
+    }
+  }
+
   Fragments::const_iterator func = fragments_.find(name);
   if (func != fragments_.end()) {
     // The ABI, arg types and ret type will be overridden by the caller.
     if (func->second.mReturnType == RT_DOUBLE) {
-      CallInfo target = {(uintptr_t)func->second.rdouble, 0, ABI_FASTCALL,
-                         /*isPure*/ 0,
-                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      CallInfo target = {
+          (uintptr_t)func->second.rdouble, func->second.typeSig, ABI_FASTCALL,
+          /*isPure*/ 0, ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
       *ci = target;
     } else if (func->second.mReturnType == RT_FLOAT) {
-      CallInfo target = {(uintptr_t)func->second.rfloat, 0, ABI_FASTCALL,
-                         /*isPure*/ 0,
-                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      CallInfo target = {
+          (uintptr_t)func->second.rfloat, func->second.typeSig, ABI_FASTCALL,
+          /*isPure*/ 0, ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
       *ci = target;
     } else if (func->second.mReturnType == RT_QUAD) {
-      CallInfo target = {(uintptr_t)func->second.rquad, 0, ABI_FASTCALL,
-                         /*isPure*/ 0,
-                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      CallInfo target = {
+          (uintptr_t)func->second.rquad, func->second.typeSig, ABI_FASTCALL,
+          /*isPure*/ 0, ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
       *ci = target;
     } else {
-      CallInfo target = {(uintptr_t)func->second.rint, 0, ABI_FASTCALL,
-                         /*isPure*/ 0,
-                         ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
+      CallInfo target = {
+          (uintptr_t)func->second.rint, func->second.typeSig, ABI_FASTCALL,
+          /*isPure*/ 0, ACCSET_STORE_ANY verbose_only(, func->first.c_str())};
       *ci = target;
     }
-    return true;
+    return 2;
   } else {
-    return false;
+    return 0;
   }
 }
 
 FunctionBuilderImpl::FunctionBuilderImpl(NanoJitContextImpl &parent,
                                          const std::string &fragmentName,
-                                         bool optimize)
+                                         ArgType rvalue, const ArgType *args,
+                                         int argc, bool optimize)
     : parent_(parent), fragName_(fragmentName), optimize_(optimize),
       bufWriter_(nullptr), cseFilter_(nullptr), exprFilter_(nullptr),
       verboseWriter_(nullptr), validateWriter1_(nullptr),
-      validateWriter2_(nullptr), paramCount_(0) {
+      validateWriter2_(nullptr), paramCount_(0), rvalue_(rvalue) {
   fragment_ = new Fragment(nullptr verbose_only(
       , (parent_.logc_.lcbits & nanojit::LC_FragProfile) ? sProfId++ : 0));
   fragment_->lirbuf = parent_.lirbuf_;
@@ -545,8 +598,19 @@ FunctionBuilderImpl::FunctionBuilderImpl(NanoJitContextImpl &parent,
 #endif
   returnTypeBits_ = 0;
   lir_->ins0(LIR_start);
-  for (int i = 0; i < nanojit::NumSavedRegs; ++i)
+  if (argc < 0)
+    argc = 0;
+  if (argc > MAXARGS)
+    argc = MAXARGS;
+  for (int i = 0; i < nanojit::NumSavedRegs; ++i) {
     lir_->insParam(i, 1);
+  }
+  // For each expected argument
+  // we create an instruction
+  for (int i = 0; i < argc; i++) {
+    args_[i] = args[i];
+    params_[i] = insertParameter();
+  }
 }
 
 FunctionBuilderImpl::~FunctionBuilderImpl() {
@@ -556,6 +620,25 @@ FunctionBuilderImpl::~FunctionBuilderImpl() {
   delete exprFilter_;
   delete cseFilter_;
   delete bufWriter_;
+}
+
+LIns *FunctionBuilderImpl::getParameter(int pos) {
+  if (pos < 0 || pos >= paramCount_)
+    return nullptr;
+  // TODO not sure if the type conversions
+  // below cover all cases - also need
+  // tests to validate
+  if (args_[pos] == ARGTYPE_I) {
+#ifdef NANOJIT_64BIT
+    return q2i(params_[pos]);
+#endif
+  } else if (args_[pos] == ARGTYPE_F) {
+    return d2f(q2d((params_[pos])));
+  } else if (args_[pos] == ARGTYPE_D) {
+    return q2d(params_[pos]);
+  } else {
+    return params_[pos];
+  }
 }
 
 LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
@@ -570,13 +653,11 @@ LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
   // TODO is there a need to handle functions compiled by
   // nanojit differently than externally defined functions.
   // Internals are FASTCALL for example
-  bool known = parent_.lookupFunction(func, ci);
+  int known = parent_.lookupFunction(func, ci);
   if (!known)
     return nullptr;
 
-  ci->_abi = abi;
   ArgType argTypes[MAXARGS];
-
   LIns *args[MAXARGS];
   memset(&args[0], 0, sizeof(args));
 
@@ -610,27 +691,39 @@ LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
     retType = ARGTYPE_F;
   else
     return nullptr;
-  ci->_typesig = CallInfo::typeSigN(retType, (int)argc, argTypes);
+
+  uint32_t callSiteTypeSig = CallInfo::typeSigN(retType, (int)argc, argTypes);
+  if (ci->_typesig != 0 && ci->_typesig != callSiteTypeSig) {
+    fprintf(stderr, "Fatal error: mismatch in type signature between callsite "
+                    "and function definition\n");
+    abort();
+  }
+
+  ci->_typesig = callSiteTypeSig;
 
   return lir_->insCall(ci, args);
 }
 
 LIns *FunctionBuilderImpl::reti(LIns *result) {
+  NanoAssert(rvalue_ == ARGTYPE_I);
   returnTypeBits_ |= ReturnType::RT_INT;
   return lir_->ins1(LIR_reti, result);
 }
 
 LIns *FunctionBuilderImpl::retd(LIns *result) {
+  NanoAssert(rvalue_ == ARGTYPE_D);
   returnTypeBits_ |= ReturnType::RT_DOUBLE;
   return lir_->ins1(LIR_retd, result);
 }
 
 LIns *FunctionBuilderImpl::retf(LIns *result) {
+  NanoAssert(rvalue_ == ARGTYPE_F);
   returnTypeBits_ |= ReturnType::RT_FLOAT;
   return lir_->ins1(LIR_retf, result);
 }
 
 LIns *FunctionBuilderImpl::retq(LIns *result) {
+  NanoAssert(rvalue_ == ARGTYPE_Q);
   returnTypeBits_ |= ReturnType::RT_QUAD;
   return lir_->ins1(LIR_retq, result);
 }
@@ -661,6 +754,16 @@ void *FunctionBuilderImpl::finalize() {
     std::cerr << "warning: multiple return types in fragment '" << fragName_
               << "'" << std::endl;
     return nullptr;
+  }
+
+  /*
+  * Note that it is necessary to mark the parameters as 'live'
+  * after the function code is complete - i.e. at the very end. This
+  * needed to tell the register allocator to not use the register
+  * associated with the parameter.
+  */
+  for (int i = 0; i < paramCount_; i++) {
+    liveq(params_[i]);
   }
 
   fragment_->lastIns =
@@ -699,18 +802,22 @@ void *FunctionBuilderImpl::finalize() {
   case RT_INT:
     f->rint = (RetInt)((uintptr_t)fragment_->code());
     f->mReturnType = RT_INT;
+    f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
     return f->rint;
   case RT_QUAD:
     f->rquad = (RetQuad)((uintptr_t)fragment_->code());
     f->mReturnType = RT_QUAD;
+    f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
     return f->rquad;
   case RT_DOUBLE:
     f->rdouble = (RetDouble)((uintptr_t)fragment_->code());
     f->mReturnType = RT_DOUBLE;
+    f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
     return f->rdouble;
   case RT_FLOAT:
     f->rfloat = (RetFloat)((uintptr_t)fragment_->code());
     f->mReturnType = RT_FLOAT;
+    f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
     return f->rfloat;
   default:
     NanoAssert(0);
@@ -781,9 +888,12 @@ void *NJX_get_function_by_name(NJXContextRef ctx, const char *name) {
 
 NJXFunctionBuilderRef NJX_create_function_builder(NJXContextRef context,
                                                   const char *name,
-                                                  int optimize) {
+                                                  NJXValueKind return_type,
+                                                  const NJXValueKind *args,
+                                                  int argc, int optimize) {
   auto impl = new FunctionBuilderImpl(*unwrap_context(context),
-                                      std::string(name), optimize != 0);
+                                      std::string(name), (ArgType)return_type,
+                                      (ArgType *)args, argc, optimize != 0);
   return wrap_function_builder(impl);
 }
 
@@ -836,8 +946,8 @@ NJXLInsRef NJX_immf(NJXFunctionBuilderRef fn, float f) {
 * This also means that only primitive values and pointers can be
 * used as function parameters.
 */
-NJXLInsRef NJX_insert_parameter(NJXFunctionBuilderRef fn) {
-  return wrap_ins(unwrap_function_builder(fn)->insertParameter());
+NJXLInsRef NJX_get_parameter(NJXFunctionBuilderRef fn, int i) {
+  return wrap_ins(unwrap_function_builder(fn)->getParameter(i));
 }
 
 NJXLInsRef NJX_addi(NJXFunctionBuilderRef fn, NJXLInsRef lhs, NJXLInsRef rhs) {

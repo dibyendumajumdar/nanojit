@@ -19,7 +19,8 @@ int simplest(NJXContextRef jit) {
   typedef int (*functype)(void);
 
   // Create a function builder
-  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+  NJXFunctionBuilderRef builder =
+      NJX_create_function_builder(jit, name, NJXValueKind_I, nullptr, 0, true);
 
   auto zero = NJX_immi(builder, 0);
   auto ret = NJX_reti(builder, zero);
@@ -42,11 +43,12 @@ int add2(NJXContextRef jit) {
   typedef int (*functype)(NJXParamType);
 
   // Create a function builder
-  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+  NJXValueKind args[1] = {NJXValueKind_I};
+  NJXFunctionBuilderRef builder =
+      NJX_create_function_builder(jit, name, NJXValueKind_I, args, 1, true);
 
   auto two = NJX_immi(builder, 2);              /* 2 */
-  auto param1 = NJX_insert_parameter(builder);  /* arg1 */
-  param1 = NJX_q2i(builder, param1);            /* (int) arg1 */
+  auto param1 = NJX_get_parameter(builder, 0);  /* arg1 */
   auto result = NJX_addi(builder, param1, two); /* add */
   auto ret = NJX_reti(builder, result);         /* return result */
 
@@ -68,14 +70,14 @@ int add(NJXContextRef jit) {
   typedef int (*functype)(NJXParamType, NJXParamType);
 
   // Create a function builder
-  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+  NJXValueKind args[2] = {NJXValueKind_I, NJXValueKind_I};
+  NJXFunctionBuilderRef builder =
+      NJX_create_function_builder(jit, name, NJXValueKind_I, args, 2, true);
 
-  auto param1 = NJX_insert_parameter(builder); /* arg1 */
-  auto param2 = NJX_insert_parameter(builder); /* arg2 */
-  auto x = NJX_q2i(builder, param1);           /* x = (int) arg1 */
-  auto y = NJX_q2i(builder, param2);           /* y = (int) arg2 */
-  auto result = NJX_addi(builder, x, y);       /* result = x + y */
-  auto ret = NJX_reti(builder, result);        /* return result */
+  auto x = NJX_get_parameter(builder, 0); /* arg1 */
+  auto y = NJX_get_parameter(builder, 1); /* arg2 */
+  auto result = NJX_addi(builder, x, y);  /* result = x + y */
+  auto ret = NJX_reti(builder, result);   /* return result */
 
   functype f = (functype)NJX_finalize(builder);
 
@@ -99,19 +101,20 @@ int calladd(NJXContextRef jit) {
 
   // Create the add function
   // int add(int x, int y) { return x+y; }
-  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, "add", true);
-  auto param1 = NJX_insert_parameter(builder); /* arg1 */
-  auto param2 = NJX_insert_parameter(builder); /* arg2 */
-  auto x = NJX_q2i(builder, param1);           /* x = (int) arg1 */
-  auto y = NJX_q2i(builder, param2);           /* y = (int) arg2 */
-  auto result = NJX_addi(builder, x, y);       /* result = x + y */
-  auto ret = NJX_reti(builder, result);        /* return result */
+  NJXValueKind args1[2] = {NJXValueKind_I, NJXValueKind_I};
+  NJXFunctionBuilderRef builder =
+      NJX_create_function_builder(jit, "add", NJXValueKind_I, args1, 2, true);
+  auto x = NJX_get_parameter(builder, 0); /* arg1 */
+  auto y = NJX_get_parameter(builder, 1); /* arg2 */
+  auto result = NJX_addi(builder, x, y);  /* result = x + y */
+  auto ret = NJX_reti(builder, result);   /* return result */
   adderfunc fadd = (adderfunc)NJX_finalize(builder);
   NJX_destroy_function_builder(builder);
 
   // Create the caller function
   // int caller() { return add(100, 200); }
-  builder = NJX_create_function_builder(jit, "caller", true);
+  builder = NJX_create_function_builder(jit, "caller", NJXValueKind_I, nullptr,
+                                        0, true);
   x = NJX_immi(builder, 100);
   y = NJX_immi(builder, 200);
   NJXLInsRef args[2] = {x, y};
@@ -135,13 +138,13 @@ int mult(NJXContextRef jit) {
   typedef int64_t (*functype)(NJXParamType, NJXParamType);
 
   // Create a function builder
-  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+  NJXValueKind args[2] = {NJXValueKind_Q, NJXValueKind_Q};
+  NJXFunctionBuilderRef builder =
+      NJX_create_function_builder(jit, name, NJXValueKind_Q, args, 2, true);
 
-  auto param1 = NJX_insert_parameter(builder); /* arg1 */
-  auto param2 = NJX_insert_parameter(builder); /* arg2 */
-  auto x = param1;
-  auto y = param2;
-  auto z = NJX_mulq(builder, x, y); /* z = x * y */
+  auto x = NJX_get_parameter(builder, 0); /* arg1 */
+  auto y = NJX_get_parameter(builder, 1); /* arg2 */
+  auto z = NJX_mulq(builder, x, y);       /* z = x * y */
   // The multiplication where the RHS is an int32 is special cased
   // so this is an attempt to validate that this works correctly
   auto imm8 = NJX_immq(builder, 8);
@@ -167,14 +170,14 @@ int div(NJXContextRef jit) {
   typedef int64_t (*functype)(NJXParamType, NJXParamType);
 
   // Create a function builder
-  NJXFunctionBuilderRef builder = NJX_create_function_builder(jit, name, true);
+  NJXValueKind args[2] = {NJXValueKind_Q, NJXValueKind_Q};
+  NJXFunctionBuilderRef builder =
+      NJX_create_function_builder(jit, name, NJXValueKind_Q, args, 2, true);
 
-  auto param1 = NJX_insert_parameter(builder); /* arg1 */
-  auto param2 = NJX_insert_parameter(builder); /* arg2 */
-  auto x = param1;
-  auto y = param2;
-  auto result = NJX_divq(builder, x, y); /* result = x / y */
-  auto ret = NJX_retq(builder, result);  /* return result */
+  auto x = NJX_get_parameter(builder, 0); /* arg1 */
+  auto y = NJX_get_parameter(builder, 1); /* arg2 */
+  auto result = NJX_divq(builder, x, y);  /* result = x / y */
+  auto ret = NJX_retq(builder, result);   /* return result */
 
   functype f = (functype)NJX_finalize(builder);
 
@@ -184,7 +187,6 @@ int div(NJXContextRef jit) {
     return f(250, 100) == 2 ? 0 : 1;
   return 1;
 }
-
 
 int main(int argc, const char *argv[]) {
 
@@ -200,5 +202,9 @@ int main(int argc, const char *argv[]) {
 
   NJX_destroy_context(jit);
 
+  if (rc == 0)
+    printf("Test OK\n");
+  else
+    printf("Test FAILED\n");
   return rc;
 }

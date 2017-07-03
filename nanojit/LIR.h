@@ -369,7 +369,7 @@ NanoStaticAssert(LIR_start == 0 && LIR_sentinel <= 256); // It's ok if LIR_senti
             return a1 << TYPESIG_FIELDSZB*8 | typeSig7(r, a2, a3, a4, a5, a6, a7, a8);
         }
         // Encode 'r func(a1, ..., aN))'
-        static inline uint32_t typeSigN(ArgType r, int N, ArgType a[]) {
+        static inline uint32_t typeSigN(ArgType r, int N, const ArgType a[]) {
             uint32_t typesig = r;
             for (int i = 0; i < N; i++) {
                 typesig |= a[i] << TYPESIG_FIELDSZB*(N-i);
