@@ -47,12 +47,24 @@ enum NJXCallAbiKind {
 };
 
 /*
-* All values must fit into three bits.  See CallInfo for details.
+* Maximum number of arguments that can be
+* accepted by a JITed function.
+*/
+enum {
+#ifdef _WIN64
+  NJXMaxArgs = 4
+#else
+  NJXMaxArgs = 6
+#endif
+};
+
+/*
+* These types are used to define function argument
+* types. See NJX_create_function_builder() below for further
+* notes.
 */
 enum NJXValueKind {
-  NJXValueKind_V = 0,  // void
-  NJXValueKind_I = 1,  // int32_t
-  NJXValueKind_UI = 2, // uint32_t
+  NJXValueKind_I = 1, // int32_t
 #ifdef NANOJIT_64BIT
   NJXValueKind_Q = 3, // uint64_t
 #endif
@@ -63,7 +75,6 @@ enum NJXValueKind {
 #else
   NJXValueKind_P = NJXValueKind_I, // pointer
 #endif
-  NJXValueKind_B = NJXValueKind_I // bool
 };
 
 /**
@@ -78,9 +89,19 @@ extern NJXContextRef NJX_create_context(int verbose);
 */
 extern void NJX_destroy_context(NJXContextRef);
 
+/*
+* Registers an externally defined C function.
+* Note that such functions can only accept upto 8 parameters
+* and the only supported calling convention is C calling
+* convention.
+*/
+extern bool NJX_register_C_function(NJXContextRef context, const char *name,
+                                    void *fptr, NJXValueKind return_type,
+                                    const NJXValueKind *args, int argc);
+
 /**
 * Returns a compiled function looking it up by name.
-* The point must be cast to the correct signature.
+* The pointer must be cast to the correct signature.
 */
 extern void *NJX_get_function_by_name(NJXContextRef, const char *name);
 
@@ -91,11 +112,17 @@ extern void *NJX_get_function_by_name(NJXContextRef, const char *name);
 * compiled the builder object can be thrown away - the compiled function
 * will live as long as the owning Jit Context lives.
 * If optimize flag is true then NanoJit's CSE and Expr filters are enabled.
+* *** IMPORTANT ***
+* Note that a limitation of NanoJIT is that the function can only
+* accept integer or pointer parameters on X64 architecture. Furthermore
+* the number of parameters is limited to 4 on WIN64 and 6 on UNIX platforms
+* as these are the integer/pointer registers used by these OSes on
+* X64 platform. If you specify unsupported number of arguments then
+* an error will be reported and this function will fail.
 */
-extern NJXFunctionBuilderRef
-NJX_create_function_builder(NJXContextRef context, const char *name,
-                            enum NJXValueKind return_type, const enum NJXValueKind *args,
-                            int argc, int optimize);
+extern NJXFunctionBuilderRef NJX_create_function_builder(
+    NJXContextRef context, const char *name, enum NJXValueKind return_type,
+    const enum NJXValueKind *args, int argc, int optimize);
 
 /**
 * Destroys the FunctionBuilder object. Note that this will not delete the

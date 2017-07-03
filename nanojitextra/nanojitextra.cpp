@@ -137,7 +137,7 @@ public:
 
   // Register an external function - assumed to be C calling
   // convention
-  void registerFunction(const std::string &name, void *fptr, ArgType retval,
+  bool registerFunction(const std::string &name, void *fptr, ArgType retval,
                         const ArgType *args, int argc);
 };
 
@@ -498,15 +498,39 @@ LirasmFragment *NanoJitContextImpl::get_fragment(const char *name) {
   return &result->second;
 }
 
-void NanoJitContextImpl::registerFunction(const std::string &name, void *fptr,
+bool NanoJitContextImpl::registerFunction(const std::string &name, void *fptr,
                                           ArgType retval, const ArgType *args,
                                           int argc) {
   for (int i = 0; i < external_functions_.size(); i++) {
     auto &function = external_functions_[i];
     if (function.name == name) {
-      return;
+      return function.callInfo._address == (uintptr_t)fptr;
     }
   }
+  if (argc < 0 || argc > MAXARGS) {
+    fprintf(
+        stderr,
+        "Error: cannot register a function that has more than %d arguments\n",
+        MAXARGS);
+    return false;
+  }
+  if (!fptr) {
+    fprintf(stderr, "Error: cannot register a NULL function\n");
+    return false;
+  }
+  for (int i = 0; i < argc; i++) {
+    if (args[i] < ARGTYPE_I && args[i] > ARGTYPE_F) {
+      fprintf(stderr, "Error in arg[%d]: Function cannot accept this type of "
+                      "argument at present\n",
+              i);
+      return nullptr;
+    }
+  }
+  if (retval < ARGTYPE_V || retval > ARGTYPE_F) {
+    fprintf(stderr, "Error: Function must return a value\n");
+    return nullptr;
+  }
+
   uint32_t typeSig = CallInfo::typeSigN(retval, argc, args);
   Function function;
   function.name = name;
@@ -519,6 +543,7 @@ void NanoJitContextImpl::registerFunction(const std::string &name, void *fptr,
                                                // be a parameter
   function.callInfo._isPure = 0;
   external_functions_.push_back(function);
+  return true;
 }
 
 int NanoJitContextImpl::lookupFunction(const std::string &name, CallInfo *&ci) {
@@ -633,11 +658,9 @@ LIns *FunctionBuilderImpl::getParameter(int pos) {
   if (args_[pos] == ARGTYPE_I) {
 #ifdef NANOJIT_64BIT
     return q2i(params_[pos]);
+#else
+    return params_[pos];
 #endif
-  } else if (args_[pos] == ARGTYPE_F) {
-    return d2f(qasd(params_[pos]));
-  } else if (args_[pos] == ARGTYPE_D) {
-    return qasd(params_[pos]);
   } else {
     return params_[pos];
   }
@@ -888,11 +911,37 @@ void *NJX_get_function_by_name(NJXContextRef ctx, const char *name) {
   return nullptr;
 }
 
+bool NJX_register_C_function(NJXContextRef context, const char *name,
+                             void *fptr, NJXValueKind return_type,
+                             const NJXValueKind *args, int argc) {
+  auto ctx = unwrap_context(context);
+  return ctx->registerFunction(std::string(name), fptr, (ArgType)return_type,
+                               (const ArgType *)args, argc);
+}
+
 NJXFunctionBuilderRef NJX_create_function_builder(NJXContextRef context,
                                                   const char *name,
                                                   NJXValueKind return_type,
                                                   const NJXValueKind *args,
                                                   int argc, int optimize) {
+  if (argc < 0 || argc > NJXMaxArgs) {
+    fprintf(stderr,
+            "Error: Function cannot accept more than %d arguments at present\n",
+            NJXMaxArgs);
+    return nullptr;
+  }
+  for (int i = 0; i < argc; i++) {
+    if (args[i] != NJXValueKind_I && args[i] != NJXValueKind_Q) {
+      fprintf(stderr, "Error in arg[%d]: Function cannot accept non integer / "
+                      "pointer arguments at present\n",
+              i);
+      return nullptr;
+    }
+  }
+  if (return_type < NJXValueKind_I || return_type > NJXValueKind_F) {
+    fprintf(stderr, "Error: Function must return a value\n");
+    return nullptr;
+  }
   auto impl = new FunctionBuilderImpl(*unwrap_context(context),
                                       std::string(name), (ArgType)return_type,
                                       (ArgType *)args, argc, optimize != 0);

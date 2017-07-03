@@ -188,6 +188,41 @@ int div(NJXContextRef jit) {
   return 1;
 }
 
+static double extf1(double a, double b) { return a + b; }
+
+/**
+* Test call to extf1() above
+*/
+static int callextf1(NJXContextRef jit) {
+  const char *name = "callext1";
+  typedef double (*functype)(void);
+
+  // Create a function builder
+  NJXValueKind declargs[2] = {NJXValueKind_D, NJXValueKind_D};
+  if (!NJX_register_C_function(jit, "extf1", extf1, NJXValueKind_D, declargs,
+                               2))
+    return 1;
+
+  NJXFunctionBuilderRef builder =
+      NJX_create_function_builder(jit, name, NJXValueKind_D, nullptr, 0, true);
+  auto x = NJX_immd(builder, 4.2);
+  auto y = NJX_immd(builder, 9.45); /* arg2 */
+
+  NJXLInsRef args[2] = {x, y};
+  auto result =
+      NJX_calld(builder, "extf1", NJXCallAbiKind::NJX_CALLABI_CDECL, 2, args);
+
+  auto ret = NJX_retd(builder, result); /* return result */
+
+  functype f = (functype)NJX_finalize(builder);
+
+  NJX_destroy_function_builder(builder);
+
+  if (f != nullptr)
+    return f() == (4.2 + 9.45) ? 0 : 1;
+  return 1;
+}
+
 int main(int argc, const char *argv[]) {
 
   NJXContextRef jit = NJX_create_context(true);
@@ -199,6 +234,7 @@ int main(int argc, const char *argv[]) {
   rc += mult(jit);
   rc += div(jit);
   rc += calladd(jit);
+  rc += callextf1(jit);
 
   NJX_destroy_context(jit);
 
