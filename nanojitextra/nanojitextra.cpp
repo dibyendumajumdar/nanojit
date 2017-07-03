@@ -434,6 +434,8 @@ public:
   LIns *d2i(LIns *q) { return lir_->ins1(LIR_d2i, q); }
   LIns *f2i(LIns *q) { return lir_->ins1(LIR_f2i, q); }
   LIns *d2q(LIns *q) { return lir_->ins1(LIR_d2q, q); }
+  LIns *qasd(LIns *q) { return lir_->ins1(LIR_qasd, q); }
+  LIns *dasq(LIns *q) { return lir_->ins1(LIR_dasq, q); }
 
   LIns *liveq(LIns *q) { return lir_->ins1(LIR_liveq, q); }
   LIns *livei(LIns *q) { return lir_->ins1(LIR_livei, q); }
@@ -633,9 +635,9 @@ LIns *FunctionBuilderImpl::getParameter(int pos) {
     return q2i(params_[pos]);
 #endif
   } else if (args_[pos] == ARGTYPE_F) {
-    return d2f(q2d((params_[pos])));
+    return d2f(qasd(params_[pos]));
   } else if (args_[pos] == ARGTYPE_D) {
-    return q2d(params_[pos]);
+    return qasd(params_[pos]);
   } else {
     return params_[pos];
   }
