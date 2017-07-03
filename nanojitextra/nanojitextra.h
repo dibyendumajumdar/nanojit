@@ -96,8 +96,8 @@ extern void NJX_destroy_context(NJXContextRef);
 * convention.
 */
 extern bool NJX_register_C_function(NJXContextRef context, const char *name,
-                                    void *fptr, NJXValueKind return_type,
-                                    const NJXValueKind *args, int argc);
+                                    void *fptr, enum NJXValueKind return_type,
+                                    const enum NJXValueKind *args, int argc);
 
 /**
 * Returns a compiled function looking it up by name.
