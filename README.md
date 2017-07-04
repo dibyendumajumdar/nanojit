@@ -14,6 +14,7 @@ The documentation on NanoJIT is sparse or non-existent, making it hard to get st
 ## Project news
 
 * Development of NanoJITExtra C API is underway
+* Currently I am concentrating on X86-64 architecture - in particular I have no ability to test the non X86 architectures
 * April-2017: Added support for 64-bit integer multiply, divide and modulus operators in X64 LIR. Not available on other architectures.
 
 ## Playing with NanoJIT
@@ -118,6 +119,8 @@ Building the project will result in a standalone NanoJIT and NanoJITExtra librar
 ## Using NanoJIT
 
 Once you have built the library all you need is to statically link the library, and include the nanojitextra.h header file. Note that the API is till being developed so not all API calls are exposed yet. I will update here when the API is complete.
+
+Additionally please see Usage Notes below for additional information on limitations of NanoJIT.
 
 ## Documentation
 A secondary goal of this project is to create some documentation of the standalone library, and document how it can be used. 
