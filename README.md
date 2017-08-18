@@ -118,16 +118,57 @@ Building the project will result in a standalone NanoJIT and NanoJITExtra librar
 
 ## Using NanoJIT
 
-Once you have built the library all you need is to statically link the library, and include the nanojitextra.h header file. Note that the API is till being developed so not all API calls are exposed yet. I will update here when the API is complete.
+Once you have built the library all you need is to statically link the library, and include the nanojitextra.h header file. Note that the API is till being developed so not all API calls are exposed yet. 
 
-Additionally please see Usage Notes below for additional information on limitations of NanoJIT.
+Using NanoJIT on its own is a bit complicated mainly due to the requirement to provide variable liveness information as
+described below. Addditionally the resolution of jumps to labels also requires some pre-processing.
+
+It is therefore far easier to use a front-end to generate the NanoJIT LIR - a C front-end is being developed in the 
+project [dmr_C](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend). If you would still like to use 
+NanoJIT directly then please read following carefully.
+
+### Liveness requirements 
+The following information is from Edwin Smith (original Nanojit architect):
+
+> The register allocator computes virtual register liveness as it runs, while it
+is scanning LIR bottom-up. If the parameter register is being reused, it's
+because the register allocator thinks it's available.  Since it's running bottom
+up, it will see the uses of a register before the definition, if the register is
+being used at all.
+
+> Loops are tricky. If a virtual register is being defined before the loop entry
+point, and used inside a loop, then it's live range must cover the whole loop.
+the frontend compiler must insert LIR_live at the loop jumps (back edges)
+to extend the live range. see LIR_livei, livep, etc..
+
+### Jumps and Labels
+The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
+
+The code generator inserts the next instruction into the current position within the LIR buffer, so that the way labels and jumps need to be handled is like this:
+
+* When you need to insert a jump, initially set jump target to NULL. This is okay. But keep track in a memory structure the logical target (e.g. the label name) for that jump target.  
+* Assign labels to the start of each basic block as you generate code for each basic block - these will become jump targets. Maintain a map of labels names to instructions.
+* After code generation is completed go back through the list of jumps you created in step 1, and set the targets to the labels which are now in place. You use the map created in step 2 to locate the label instructions.
+
+### NanoJIT does not handle complex types
+The NanoJIT IR works at the level of integers, floats and pointers. Complex structures have to be managed by the front-end
+by generating appropriate load/store sequences.
+
+### JIT Functions can only take integer/pointer arguments
+At least on X64 a limitation in NanoJIT is that JIT compiled functions can only take a limited number of arguments. On Win64 the limit is upto 4 integer or pointer arguments. On UNIX platforms it is 6 arguments, again only integer or pointer values. These
+limitations arise as the current implementation only looks at the first 4/6 registers for arguments as per the X64 ABI.
+
+A JIT function should be able to return a double or float though - but this is something that is yet to be verified.
+
+### External C functions can only take upto 8 arguments
+External C functions called from JIT code can only take upto 8 arguments, although in this case it it possible to
+to pass double or float values. Return values can also be double or float.
 
 ## Documentation
 A secondary goal of this project is to create some documentation of the standalone library, and document how it can be used. 
 
 * [Main Components in NanoJIT](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/overview.md)
 * [LIR Op Codes](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/nanjit-opcodes.md)
-* [Detailed Usage Notes](https://github.com/dibyendumajumdar/nanojit/blob/master/docs/details.md)
 
 ## Why NanoJIT?
 It seems that NanoJIT is one of the rare examples of a small cross-platform standalone JIT library that can be used outside of the original project. It also matters that the license is not GPL. Finally it has been in production use in ActionScript and Adobe Flash for some time so one hopes that most bugs have been ironed out.
