@@ -1341,7 +1341,7 @@ NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond,
                                                         unwrap_ins((to))));
 }
 
-NJXLInsRef NJX_cbr(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef iftrue,
+NJXLInsRef NJX_choose(NJXFunctionBuilderRef fn, NJXLInsRef cond, NJXLInsRef iftrue,
                    NJXLInsRef iffalse, bool use_cmov) {
   return wrap_ins(unwrap_function_builder(fn)->choose(
       unwrap_ins(cond), unwrap_ins(iftrue), unwrap_ins(iffalse), use_cmov));

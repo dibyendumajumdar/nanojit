@@ -368,10 +368,10 @@ extern NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond,
                                 NJXLInsRef to);
 
 /**
-* Inserts a conditional to execute and branches to execute if
-* the condition is true and false respectively.
+* Assigns a value based on the condition - similar to C's ?: operator.
+* If use_cmov is true, then emit CMOV assembly instruction
 */
-extern NJXLInsRef NJX_cbr(NJXFunctionBuilderRef fn, NJXLInsRef cond,
+extern NJXLInsRef NJX_choose(NJXFunctionBuilderRef fn, NJXLInsRef cond,
                           NJXLInsRef iftrue, NJXLInsRef iffalse, bool use_cmov);
 
 /**
@@ -380,6 +380,10 @@ extern NJXLInsRef NJX_cbr(NJXFunctionBuilderRef fn, NJXLInsRef cond,
 * size says how many possible values index can take
 * Note that each of the caller must set the
 * jump targets for each value using NJX_set_switch_target().
+* ISSUE: There doesn't appear to be a way to specify
+* default case so that makes this not so useful
+* ISSUE: Also not clear if the switch values must be consecutive
+* TBC whether this is worth having
 */
 extern NJXLInsRef NJX_switch(NJXFunctionBuilderRef fn, NJXLInsRef index,
                              int32_t size);
