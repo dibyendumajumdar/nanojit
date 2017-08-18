@@ -370,6 +370,9 @@ extern NJXLInsRef NJX_cbr_false(NJXFunctionBuilderRef fn, NJXLInsRef cond,
 /**
 * Assigns a value based on the condition - similar to C's ?: operator.
 * If use_cmov is true, then emit CMOV assembly instruction
+* Note that the condition must be a comparison operator or
+* the literal 0 or 1. Ensure that both operands are the same time
+* else there will be an assertion failure
 */
 extern NJXLInsRef NJX_choose(NJXFunctionBuilderRef fn, NJXLInsRef cond,
                           NJXLInsRef iftrue, NJXLInsRef iffalse, bool use_cmov);
