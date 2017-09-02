@@ -141,6 +141,8 @@ point, and used inside a loop, then it's live range must cover the whole loop.
 the frontend compiler must insert LIR_live at the loop jumps (back edges)
 to extend the live range. see LIR_livei, livep, etc..
 
+What this means is that whenever you have a jump that goes backwards you need to add instructions to mark those variables live that are needed by the target block. To do this you need to track the liveness state of variables.
+
 ### Jumps and Labels
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
 
