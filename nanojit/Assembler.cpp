@@ -193,7 +193,7 @@ typedef void* (*decode_instructions_ftype) (void* start, void* end,
 
 #ifdef _DEBUG
 
-    /*static*/ LIns* const AR::BAD_ENTRY = (LIns*)0xdeadbeef;
+    /*static*/ LIns* const AR::BAD_ENTRY = (LIns*)((intptr_t)0xdeadbeef);
 
     void AR::validateQuick()
     {

@@ -990,12 +990,7 @@ NJXLInsRef NJX_immf(NJXFunctionBuilderRef fn, float f) {
 }
 
 /**
-* Adds a function parameter - the parameter size is always the
-* default register size I think - so on a 64-bit machine it will be
-* quads whereas on 32-bit machines it will be words. Caller must
-* handle this and convert to type needed.
-* This also means that only primitive values and pointers can be
-* used as function parameters.
+* Gets a function parameter.
 */
 NJXLInsRef NJX_get_parameter(NJXFunctionBuilderRef fn, int i) {
   return wrap_ins(unwrap_function_builder(fn)->getParameter(i));

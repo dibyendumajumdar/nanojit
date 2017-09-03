@@ -8,6 +8,9 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+/*
+* Currently only X86-64 is being tested.
+*/
 #define NANOJIT_64BIT
 
 #ifdef __cplusplus
@@ -39,6 +42,10 @@ typedef struct NFXFunctionBuilder *NJXFunctionBuilderRef;
 */
 typedef int64_t NJXParamType;
 
+/**
+* Calling ABI - but believe it doesn't make a difference on
+* X86-64. 
+*/
 enum NJXCallAbiKind {
   NJX_CALLABI_FASTCALL,
   NJX_CALLABI_THISCALL,
@@ -77,6 +84,19 @@ enum NJXValueKind {
 #endif
 };
 
+/*
+* Note on NanoJIT types:
+* The NanoJIT IR operates on 4 types of values:
+* i - integer (32 bit)
+* q - quad (64 bit integer)
+* f - float (32 bit)
+* d - double (64 bit)
+* On 64-bit architecture pointers are synonymous with quads,
+* i.e. a pointer is just a quad integer. There is no separate
+* pointer type.
+*/
+
+
 /**
 * Creates a Jit Context. If versbose is true then during code
 * generation verbose output is generated.
@@ -100,8 +120,9 @@ extern bool NJX_register_C_function(NJXContextRef context, const char *name,
                                     const enum NJXValueKind *args, int argc);
 
 /**
-* Returns a compiled function looking it up by name.
+* Returns a Jit compiled function looking it up by name.
 * The pointer must be cast to the correct signature.
+* Returns nullptr if function not found.
 */
 extern void *NJX_get_function_by_name(NJXContextRef, const char *name);
 
@@ -149,9 +170,6 @@ extern NJXLInsRef NJX_retf(NJXFunctionBuilderRef fn, NJXLInsRef result);
 */
 extern NJXLInsRef NJX_retq(NJXFunctionBuilderRef fn, NJXLInsRef result);
 
-/* Void return */
-extern NJXLInsRef NJX_ret(NJXFunctionBuilderRef fn);
-
 /**
 * Creates an int32 constant
 */
@@ -173,7 +191,9 @@ extern NJXLInsRef NJX_immd(NJXFunctionBuilderRef fn, double d);
 extern NJXLInsRef NJX_immf(NJXFunctionBuilderRef fn, float f);
 
 /**
-* Gets a function parameter.
+* Gets a function parameter. The number and types of parameters
+* of a function are specified in NJX_create_function_builder().
+* This api retrieves a suitable cast parameter value.
 */
 extern NJXLInsRef NJX_get_parameter(NJXFunctionBuilderRef fn, int i);
 
@@ -264,7 +284,8 @@ extern NJXLInsRef NJX_rshuq(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                             NJXLInsRef rhs);
 
 /**
-* Tests lhs == rhs, result is 1 or 0
+* Comparisons. Note that there is no api for testing "not equal to". 
+* You can call the eq?() api twice to get not equal.
 */
 extern NJXLInsRef NJX_eqi(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                           NJXLInsRef rhs);
@@ -326,7 +347,7 @@ extern NJXLInsRef NJX_gef(NJXFunctionBuilderRef fn, NJXLInsRef lhs,
                           NJXLInsRef rhs);
 
 /**
-* Conversions
+* Conversions. u here means unsigned, c means character.
 */
 extern NJXLInsRef NJX_i2q(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_ui2uq(NJXFunctionBuilderRef fn, NJXLInsRef q);
@@ -348,7 +369,8 @@ extern NJXLInsRef NJX_d2q(NJXFunctionBuilderRef fn, NJXLInsRef q);
 extern NJXLInsRef NJX_add_label(NJXFunctionBuilderRef fn);
 
 /**
-* Allocates 'size' bytes on the stack
+* Allocates 'size' bytes on the stack. Load and store instructions
+* can be used to access memory allocated.
 */
 extern NJXLInsRef NJX_alloca(NJXFunctionBuilderRef fn, int32_t size);
 
@@ -383,10 +405,8 @@ extern NJXLInsRef NJX_choose(NJXFunctionBuilderRef fn, NJXLInsRef cond,
 * size says how many possible values index can take
 * Note that each of the caller must set the
 * jump targets for each value using NJX_set_switch_target().
-* ISSUE: There doesn't appear to be a way to specify
-* default case so that makes this not so useful
-* ISSUE: Also not clear if the switch values must be consecutive
-* TBC whether this is worth having
+* ISSUE: There is no way to specify a default case
+* ISSUE: Switch values must start at 0 and be consecutive
 */
 extern NJXLInsRef NJX_switch(NJXFunctionBuilderRef fn, NJXLInsRef index,
                              int32_t size);
@@ -405,7 +425,7 @@ extern void NJX_set_switch_target(NJXLInsRef switchins, uint32_t index,
 */
 extern void NJX_set_jmp_target(NJXLInsRef jmp, NJXLInsRef target);
 
-/* Loads */
+/* Loads, here c means character, u means unsigned, s means short */
 extern NJXLInsRef NJX_load_c2i(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
                                int32_t offset);
 extern NJXLInsRef NJX_load_uc2ui(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
@@ -425,7 +445,7 @@ extern NJXLInsRef NJX_load_d(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
 extern NJXLInsRef NJX_load_f2d(NJXFunctionBuilderRef fn, NJXLInsRef ptr,
                                int32_t offset);
 
-/* Stores */
+/* Stores - here s means short, c means character */
 extern NJXLInsRef NJX_store_i2c(NJXFunctionBuilderRef fn, NJXLInsRef value,
                                 NJXLInsRef ptr, int32_t offset);
 extern NJXLInsRef NJX_store_i2s(NJXFunctionBuilderRef fn, NJXLInsRef value,
@@ -496,7 +516,11 @@ extern NJXLInsRef NJX_calld(NJXFunctionBuilderRef fn, const char *funcname,
                             enum NJXCallAbiKind abi, int nargs,
                             NJXLInsRef args[]);
 
-/* Insert a comment */
+/* 
+* Inserts a comment, the supplied string must be valid as long as the 
+* function builder is live, as otherwise there will memory fault when 
+* the builder tries to access the comment.
+*/
 extern NJXLInsRef NJX_comment(NJXFunctionBuilderRef fn, const char *s);
 
 /**
