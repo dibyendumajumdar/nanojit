@@ -9,11 +9,11 @@ The NanoJIT IR is also restricted by platform, e.g. some instructions are only a
 
 The main unit of compilation in NanoJIT is a Fragment - which can be thought of as a chunk of code. You can make a function out of a fragment by providing a start instruction and appropriate ret instructions. But Fragments need not be functions. I believe this flexibility stems from the fact that NanoJIT was designed to be used in a tracing JIT.
 
-The documentation on NanoJIT is sparse or non-existent, making it hard to get started. I hope to provide a [simpler, documented C API](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h) to make it easier to use NanoJIT.
+The documentation on NanoJIT is sparse or non-existent, making it hard to get started. The project aims to provide a [simpler, documented C API](https://github.com/dibyendumajumdar/nanojit/blob/master/nanojitextra/nanojitextra.h) to make it easier to use NanoJIT.
 
 ## Project news
 
-* Development of NanoJITExtra C API is underway
+* Sep-2017: First alpha release of NanoJITExtra C API
 * Currently I am concentrating on X86-64 architecture - in particular I have no ability to test the non X86 architectures
 * April-2017: Added support for 64-bit integer multiply, divide and modulus operators in X64 LIR. Not available on other architectures.
 
@@ -99,7 +99,7 @@ There are bunch of [tests](https://github.com/dibyendumajumdar/nanojit/tree/mast
 
 The samples folder contains an [example program](https://github.com/dibyendumajumdar/nanojit/blob/master/samples/example1.cpp) that illustrates using the NanoJITExtra C API.
 
-I am trying to use NanoJIT as the backend for a C compiler - you can see more examples of [NanoJIT LIR here](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
+I am using NanoJIT as the backend for a C compiler - you can see more examples of [NanoJIT LIR here](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend).
 
 ## Building NanoJIT
 While the goal of this project is to create a standalone build of NanoJIT, the original folder structure of avmplus is maintained so that merging upstream changes is easier.
@@ -127,29 +127,32 @@ It is therefore far easier to use a front-end to generate the NanoJIT LIR - a C 
 project [dmr_C](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend). If you would still like to use 
 NanoJIT directly then please read following carefully.
 
-### Liveness requirements 
+### Insert Liveness information 
 The following information is from Edwin Smith (original Nanojit architect):
 
-> The register allocator computes virtual register liveness as it runs, while it
-is scanning LIR bottom-up. If the parameter register is being reused, it's
-because the register allocator thinks it's available.  Since it's running bottom
-up, it will see the uses of a register before the definition, if the register is
-being used at all.
+The register allocator computes virtual register liveness as it runs, while it
+is scanning LIR bottom-up. To prevent the allocator from thinking a
+register is available when it is not, following actions are needed:
 
-> Loops are tricky. If a virtual register is being defined before the loop entry
+a) Mark function parameters as live after all code is emitted for the function.
+
+b) If a virtual register is being defined before the loop entry
 point, and used inside a loop, then it's live range must cover the whole loop.
 the frontend compiler must insert LIR_live at the loop jumps (back edges)
-to extend the live range. see LIR_livei, livep, etc..
+to extend the live range.
 
-What this means is that whenever you have a jump that goes backwards you need to add instructions to mark those variables live that are needed by the target block. To do this you need to track the liveness state of variables.
+Example: Suppose you have a jump to block B. LIR_live for B's live-in
+registers, just before the jump, should be added (only needed for backwards
+jumps though). Note that if the jump is in B1 and the target is B2, you
+need LIR_live for B2's live-in registers.
 
 ### Jumps and Labels
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
 
-The code generator inserts the next instruction into the current position within the LIR buffer, so that the way labels and jumps need to be handled is like this:
+The code generator inserts the next instruction into the _current_ position within the LIR buffer. You may not yet have the target insruction defined yet as most jumps are forward jumps. Hence following procedure must be followed:
 
-* When you need to insert a jump, initially set jump target to NULL. This is okay. But keep track in a memory structure the logical target (e.g. the label name) for that jump target.  
-* Assign labels to the start of each basic block as you generate code for each basic block - these will become jump targets. Maintain a map of labels names to instructions.
+* When you need to insert a jump, initially set jump target to NULL. This is okay. But keep track somewhere (e.g. in a memory structure) the logical target (e.g. the label name) for that jump target.  
+* Assign labels to the start of each basic block as you generate code for each basic block - these will become jump targets. Maintain a map of labels names to instructions. 
 * After code generation is completed go back through the list of jumps you created in step 1, and set the targets to the labels which are now in place. You use the map created in step 2 to locate the label instructions.
 
 ### NanoJIT does not handle complex types
