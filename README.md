@@ -149,7 +149,7 @@ need LIR_live for B2's live-in registers.
 ### Jumps and Labels
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
 
-The code generator inserts the next instruction into the _current_ position within the LIR buffer. You may not yet have the target insruction defined yet as most jumps are forward jumps. Hence following procedure must be followed:
+The code generator inserts the next instruction into the _current_ position within the LIR buffer. You may not yet have the target instruction defined yet as most jumps are forward jumps. Hence following procedure must be followed:
 
 * When you need to insert a jump, initially set jump target to NULL. This is okay. But keep track somewhere (e.g. in a memory structure) the logical target (e.g. the label name) for that jump target.  
 * Assign labels to the start of each basic block as you generate code for each basic block - these will become jump targets. Maintain a map of labels names to instructions. 
