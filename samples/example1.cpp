@@ -199,7 +199,7 @@ static int callextf1(NJXContextRef jit) {
 
   // Create a function builder
   NJXValueKind declargs[2] = {NJXValueKind_D, NJXValueKind_D};
-  if (!NJX_register_C_function(jit, "extf1", extf1, NJXValueKind_D, declargs,
+  if (!NJX_register_C_function(jit, "extf1", reinterpret_cast<void *>(extf1), NJXValueKind_D, declargs,
                                2))
     return 1;
 

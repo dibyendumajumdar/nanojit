@@ -492,7 +492,7 @@ NanoJitContextImpl::~NanoJitContextImpl() {
 
 LirasmFragment *NanoJitContextImpl::get_fragment(const char *name) {
   std::string n(name);
-  auto &result = fragments_.find(n);
+  auto const &result = fragments_.find(n);
   if (result == fragments_.end())
     return nullptr;
   return &result->second;
@@ -828,22 +828,22 @@ void *FunctionBuilderImpl::finalize() {
     f->rint = (RetInt)((uintptr_t)fragment_->code());
     f->mReturnType = RT_INT;
     f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
-    return f->rint;
+    return reinterpret_cast<void *>(f->rint);
   case RT_QUAD:
     f->rquad = (RetQuad)((uintptr_t)fragment_->code());
     f->mReturnType = RT_QUAD;
     f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
-    return f->rquad;
+    return reinterpret_cast<void *>(f->rquad);
   case RT_DOUBLE:
     f->rdouble = (RetDouble)((uintptr_t)fragment_->code());
     f->mReturnType = RT_DOUBLE;
     f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
-    return f->rdouble;
+    return reinterpret_cast<void *>(f->rdouble);
   case RT_FLOAT:
     f->rfloat = (RetFloat)((uintptr_t)fragment_->code());
     f->mReturnType = RT_FLOAT;
     f->typeSig = CallInfo::typeSigN(rvalue_, paramCount_, args_);
-    return f->rfloat;
+    return reinterpret_cast<void *>(f->rfloat);
   default:
     NanoAssert(0);
     std::cerr << "invalid return type\n";
