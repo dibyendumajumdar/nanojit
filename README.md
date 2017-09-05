@@ -114,7 +114,7 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
-On Linux the command sequences is:
+On Linux the command sequence is:
 
 ```
 mkdir build
