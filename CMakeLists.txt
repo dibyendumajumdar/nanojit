@@ -63,6 +63,12 @@ else()
   message(FATAL_ERROR "Unknown build type! Set CMAKE_BUILD_TYPE to DEBUG, CHECKED, RELEASE, or RELWITHDEBINFO!")
 endif()
 
+if (MSVC)
+    set(LIBRARY_TYPE STATIC)
+else()
+    set(LIBRARY_TYPE SHARED)
+endif()
+
 if (UNIX AND NOT APPLE)
     # -fsanitize=bounds -fsanitize=alignment -fsanitize=object-size
     # set(SANITIZER_FLAGS "-fsanitize=address")
@@ -108,10 +114,10 @@ set (LIRASM_SRCS utils/nanojit-lirasm/lirasm/lirasm.cpp)
 
 set (NANOJITEXTRA_HEADERS nanojitextra/nanojitextra.h)
 
-add_library(nanojit ${LIB_SRCS} ${NATIVE_SRC})
+add_library(nanojit ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC})
 target_link_libraries(nanojit ${EXTRA_LIBS})
 
-add_library(nanojitextra ${LIB_SRCS} ${NATIVE_SRC} ${EXT_SRCS} ${NANOJITEXTRA_HEADERS})
+add_library(nanojitextra ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC} ${EXT_SRCS} ${NANOJITEXTRA_HEADERS})
 target_link_libraries(nanojitextra ${EXTRA_LIBS})
 
 add_executable(lirasm ${LIRASM_SRCS})
