@@ -63,6 +63,19 @@ else()
   message(FATAL_ERROR "Unknown build type! Set CMAKE_BUILD_TYPE to DEBUG, CHECKED, RELEASE, or RELWITHDEBINFO!")
 endif()
 
+if (UNIX AND NOT APPLE)
+    # -fsanitize=bounds -fsanitize=alignment -fsanitize=object-size
+    # set(SANITIZER_FLAGS "-fsanitize=address")
+    set(CMAKE_C_FLAGS "${SANITIZER_FLAGS} -fno-omit-frame-pointer -std=c99 -O2 -g -Wall -Wno-comment ${CXX_OPTIONS}")
+    set(CMAKE_C_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -std=c99 -O0 -g3 -Wall -Wno-comment ${CXX_OPTIONS}")
+    set(CMAKE_C_FLAGS_RELEASE "-std=c99 -O3 -Wall -Wno-comment ${CXX_OPTIONS}")
+    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${SANITIZER_FLAGS} -std=c99 -O1 -g3 -Wall  ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS "${SANITIZER_FLAGS} -fno-omit-frame-pointer -O0 -g3 -Wall -Wno-narrowing -Wno-sign-compare -std=c++11 -fno-exceptions ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -Wno-narrowing -Wno-sign-compare -std=c++11 -fno-exceptions ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS_DEBUG "${SANITIZER_FLAGS} -fno-omit-frame-pointer -O0 -g3 -Wall -Wno-narrowing -Wno-sign-compare -std=c++11 -fno-exceptions ${CXX_OPTIONS}")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${SANITIZER_FLAGS} -O1 -g3 -Wall -Wno-narrowing -Wno-sign-compare -std=c++11 -fno-exceptions ${CXX_OPTIONS}")
+endif ()
+
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     utils/nanojit-lirasm/VMPI.nj        

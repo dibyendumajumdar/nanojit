@@ -523,12 +523,12 @@ bool NanoJitContextImpl::registerFunction(const std::string &name, void *fptr,
       fprintf(stderr, "Error in arg[%d]: Function cannot accept this type of "
                       "argument at present\n",
               i);
-      return nullptr;
+      return false;
     }
   }
   if (retval < ARGTYPE_V || retval > ARGTYPE_F) {
     fprintf(stderr, "Error: Function must return a value\n");
-    return nullptr;
+    return false;
   }
 
   uint32_t typeSig = CallInfo::typeSigN(retval, argc, args);
