@@ -114,6 +114,14 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -G "Visual Studio 15 2017 Win64" -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
+On Linux the command sequence is:
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ..
+```
+
 Building the project will result in a standalone NanoJIT and NanoJITExtra libraries, and the executable lirasm which can be used to assemble and run standalone code snippets as described above. Assuming you specified the CMAKE_INSTALL_PREFIX you can install the header files and the library using your build script.
 
 ## Using NanoJIT
