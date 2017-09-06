@@ -116,6 +116,9 @@ set (NANOJITEXTRA_HEADERS nanojitextra/nanojitextra.h)
 
 add_library(nanojit ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC})
 target_link_libraries(nanojit ${EXTRA_LIBS})
+if(APPLE)
+	set_target_properties(nanojit PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif()
 
 add_library(nanojitextra ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC} ${EXT_SRCS} ${NANOJITEXTRA_HEADERS})
 target_link_libraries(nanojitextra ${EXTRA_LIBS})
