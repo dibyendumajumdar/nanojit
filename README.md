@@ -104,7 +104,7 @@ I am using NanoJIT as the backend for a C compiler - you can see more examples o
 ## Building NanoJIT
 While the goal of this project is to create a standalone build of NanoJIT, the original folder structure of avmplus is maintained so that merging upstream changes is easier.
 
-The new build is work in progress. A very early version of CMakeLists.txt is available, this has been tested only on Windows 10 with Visual Studio 2017. The aim is to initially support the build on X86_64 processors, and Windows, Linux and Mac OSX.  
+The new build is work in progress. A very early version of CMakeLists.txt is available, this has been tested on Windows 10 with Visual Studio 2017, and with make on Linux and Mac OSX.  
 
 To create Visual Studio project files do following:
 
@@ -136,23 +136,28 @@ project [dmr_C](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-ba
 NanoJIT directly then please read following carefully.
 
 ### Insert Liveness information 
-The following information is from Edwin Smith (original Nanojit architect):
+The following information is based on information provided by Edwin Smith (original Nanojit architect):
 
 The register allocator computes virtual register liveness as it runs, while it
 is scanning LIR bottom-up. To prevent the allocator from thinking a
-register is available when it is not, following actions are needed:
+register or stack location (alloca) is available when it is not, following actions are needed:
 
 a) Mark function parameters as live after all code is emitted for the function.
 
 b) If a virtual register is being defined before the loop entry
 point, and used inside a loop, then it's live range must cover the whole loop.
 the frontend compiler must insert LIR_live at the loop jumps (back edges)
-to extend the live range.
+to extend the live range. If the virtual registers are not marked as live
+then the register allocator may incorrectly reuse the register.
+
+c) Same must be done for any stack variables created using alloca. If the
+stack variables are not correctly marked then the register allocator may use a
+stack slot for spilling a register thus overwriting the value on the stack.
 
 Example: Suppose you have a jump to block B. LIR_live for B's live-in
-registers, just before the jump, should be added (only needed for backwards
+registers and allocas, just before the jump, should be added (only needed for backwards
 jumps though). Note that if the jump is in B1 and the target is B2, you
-need LIR_live for B2's live-in registers.
+need LIR_live for B2's live-in registers and allocas.
 
 ### Jumps and Labels
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
