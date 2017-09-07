@@ -122,16 +122,16 @@ cd build
 cmake -DCMAKE_INSTALL_PREFIX=/path/to/install -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
-Building the project will result in a standalone NanoJIT and NanoJITExtra libraries, and the executable lirasm which can be used to assemble and run standalone code snippets as described above. Assuming you specified the CMAKE_INSTALL_PREFIX you can install the header files and the library using your build script.
+Building the project will result in standalone NanoJIT and NanoJITExtra libraries, and the executable `lirasm` which can be used to assemble and run standalone code snippets as described above. Assuming you specified the `CMAKE_INSTALL_PREFIX` you can install the header files and the library using your build script.
 
 ## Using NanoJIT
 
-Once you have built the library all you need is to statically link the library, and include the nanojitextra.h header file. Note that the API is till being developed so not all API calls are exposed yet. 
+Once you have built the library all you need is to link the library, and include the `nanojitextra.h` header file. Note that the API is still being developed and is therefore not final yet. 
 
 Using NanoJIT on its own is a bit complicated mainly due to the requirement to provide variable liveness information as
 described below. Addditionally the resolution of jumps to labels also requires some pre-processing.
 
-It is therefore far easier to use a front-end to generate the NanoJIT LIR - a C front-end is being developed in the 
+It is therefore far easier to use a front-end to generate the NanoJIT LIR. A C front-end is being developed in the 
 project [dmr_C](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-backend). If you would still like to use 
 NanoJIT directly then please read following carefully.
 
@@ -146,7 +146,7 @@ a) Mark function parameters as live after all code is emitted for the function.
 
 b) If a virtual register is being defined before the loop entry
 point, and used inside a loop, then it's live range must cover the whole loop.
-the frontend compiler must insert LIR_live at the loop jumps (back edges)
+The frontend compiler must insert LIR_live at the loop jumps (back edges)
 to extend the live range. If the virtual registers are not marked as live
 then the register allocator may incorrectly reuse the register.
 
