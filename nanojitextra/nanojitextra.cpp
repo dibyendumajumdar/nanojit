@@ -682,8 +682,8 @@ LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
   if (!known)
     return nullptr;
 
-  ArgType argTypes[MAXARGS];
-  LIns *args[MAXARGS];
+  ArgType argTypes[MAXARGS]; // In order
+  LIns *args[MAXARGS];	// In reverse order
   memset(&args[0], 0, sizeof(args));
 
   // Nanojit expects parameters in reverse order
@@ -693,13 +693,13 @@ LIns *FunctionBuilderImpl::call(const char *funcname, LOpcode opcode,
     NanoAssert(i >= 0 && i < argc);
     args[i] = argsin[j];
     if (args[i]->isD())
-      argTypes[i] = ARGTYPE_D;
+      argTypes[j] = ARGTYPE_D;
     else if (args[i]->isF())
-      argTypes[i] = ARGTYPE_F;
+      argTypes[j] = ARGTYPE_F;
     else if (args[i]->isQ())
-      argTypes[i] = ARGTYPE_Q;
+      argTypes[j] = ARGTYPE_Q;
     else
-      argTypes[i] = ARGTYPE_I;
+      argTypes[j] = ARGTYPE_I;
   }
 
   // Select return type from opcode.

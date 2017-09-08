@@ -71,6 +71,7 @@ enum {
 * notes.
 */
 enum NJXValueKind {
+  NJXValueKind_V = 0, // void (can only be return type of external?)
   NJXValueKind_I = 1, // int32_t
 #ifdef NANOJIT_64BIT
   NJXValueKind_Q = 3, // uint64_t
