@@ -17,6 +17,7 @@
 extern "C" {
 #endif
 
+struct NJXLIns;
 typedef struct NJXLIns *NJXLInsRef;
 
 /**
