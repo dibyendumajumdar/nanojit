@@ -136,36 +136,37 @@ project [dmr_C](https://github.com/dibyendumajumdar/dmr_c/tree/master/nanojit-ba
 NanoJIT directly then please read following carefully.
 
 ### Insert Liveness information 
-The following information is based on information provided by Edwin Smith (original Nanojit architect):
+The following information is based on information provided by Edwin Smith (original NanoJIT architect) and my own experience using it.
 
 The register allocator computes virtual register liveness as it runs, while it
 is scanning LIR bottom-up. To prevent the allocator from thinking a
 register or stack location (alloca) is available when it is not, following actions are needed:
 
-a) Mark function parameters as live after all code is emitted for the function.
+a) Mark function parameters as live after all code is emitted for the function. Since NanoJIT only allows
+parameters in registers, not marking these live can cause the registers to be clobbered.
 
-b) If a virtual register is being defined before the loop entry
-point, and used inside a loop, then it's live range must cover the whole loop.
-The frontend compiler must insert LIR_live at the loop jumps (back edges)
+b) If a virtual register is being defined before a loop entry
+point, and used inside the loop, then its live range must cover the whole loop.
+The front-end compiler must insert LIR_live at the loop jumps (back edges)
 to extend the live range. If the virtual registers are not marked as live
 then the register allocator may incorrectly reuse the register.
 
-Example: Suppose you have a jump to block B. LIR_live for B's live-in
-registers and allocas, just before the jump, should be added (only needed for backwards
-jumps though). Note that if the jump is in B1 and the target is B2, you
-need LIR_live for B2's live-in registers and allocas.
+Example: Suppose you have a backward jump to block B. LIR_live for B's live-in
+registers, should be added just before the jump (note: only needed for backwards
+jumps). Note also that if the jump is in B1 and the target is B2, you
+need LIR_live for B2's live-in registers.
 
 c) For stack allocations currently I recommend putting all allocation instructions 
-at the start of the function body, and live instructions just before or after the
-function return. As the register allocator bottom up, it sees the live instructions
-first, and this informs it about the stack allocation, until it hits the corresponding
-alloc instruction when the stack slot is assumed to be free. NanoJIT treats the stack as 
-being made up of 4 byte slots, and the maximum number of slots is 4K on X86-64 I believe.
+at the start of the function body, and LIR_live instructions just before or after the
+function return. As the register allocator scans LIR instructions bottom up, it will see the LIR_live instructions
+first, and each LIR_live informs it about the stack allocation, until it hits the corresponding
+LIR_allocp instruction when the corresponding stack slot is marked as free. NanoJIT treats the stack as 
+a sequence of 4 byte slots, and the maximum number of slots is 4K on X86-64 I believe.
 Unless I am mistaken this means that the stack size of function cannot exceed 16K.
-If the register allocator thinks a stack slot is free it might ovrwrite it when it needs
-to spill registers. It appears that the register allocator can get confused if the 
-stack allocations are interspersed with branch instructions, hence the recommendation
-to put all allocations at the beginning.
+If the register allocator thinks a stack slot is free it might overwrite it when it needs
+to spill registers. My experience is that the register allocator can get confused if the 
+LIR_allop instructions are interspersed with branch instructions, hence the recommendation
+to put all allocations at the beginning of the function.
 
 ### Jumps and Labels
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
