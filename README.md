@@ -150,14 +150,22 @@ The frontend compiler must insert LIR_live at the loop jumps (back edges)
 to extend the live range. If the virtual registers are not marked as live
 then the register allocator may incorrectly reuse the register.
 
-c) Same must be done for any stack variables created using alloca. If the
-stack variables are not correctly marked then the register allocator may use a
-stack slot for spilling a register thus overwriting the value on the stack.
-
 Example: Suppose you have a jump to block B. LIR_live for B's live-in
 registers and allocas, just before the jump, should be added (only needed for backwards
 jumps though). Note that if the jump is in B1 and the target is B2, you
 need LIR_live for B2's live-in registers and allocas.
+
+c) For stack allocations currently I recommend putting all allocation instructions 
+at the start of the function body, and live instructions just before or after the
+function return. As the register allocator bottom up, it sees the live instructions
+first, and this informs it about the stack allocation, until it hits the corresponding
+alloc instruction when the stack slot is assumed to be free. NanoJIT treats the stack as 
+being made up of 4 byte slots, and the maximum number of slots is 4K on X86-64 I believe.
+Unless I am mistaken this means that the stack size of function cannot exceed 16K.
+If the register allocator thinks a stack slot is free it might ovrwrite it when it needs
+to spill registers. It appears that the register allocator can get confused if the 
+stack allocations are interspersed with branch instructions, hence the recommendation
+to put all allocations at the beginning.
 
 ### Jumps and Labels
 The instruction set requires setting labels as jump targets. There is no concept of basic blocks as in LLVM, but a basic block can be simulated by having a sequence of code with a label at the beginning and a jump at the end.
