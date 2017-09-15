@@ -106,6 +106,20 @@ set (LIB_SRCS
         vprof/vprof.cpp
         AVMPI/float4Support.cpp
     )
+set (LIB_HEADERS
+        nanojit/Allocator.h
+        nanojit/Assembler.h
+        nanojit/CodeAlloc.h
+        nanojit/Containers.h
+        nanojit/Fragmento.h
+        nanojit/LIR.h
+        nanojit/nanojit.h
+        nanojit/Native.h
+        nanojit/Native${NANOJIT_ARCH}.h
+        nanojit/njconfig.h
+        nanojit/RegAlloc.h
+    )
+
 set (EXT_SRCS
         nanojitextra/spi.cpp
         nanojitextra/nanojitextra.cpp)
@@ -114,13 +128,13 @@ set (LIRASM_SRCS utils/nanojit-lirasm/lirasm/lirasm.cpp)
 
 set (NANOJITEXTRA_HEADERS nanojitextra/nanojitextra.h)
 
-add_library(nanojit ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC})
+add_library(nanojit ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC} ${LIB_HEADERS})
 target_link_libraries(nanojit ${EXTRA_LIBS})
 if(APPLE)
 	set_target_properties(nanojit PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 endif()
 
-add_library(nanojitextra ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC} ${EXT_SRCS} ${NANOJITEXTRA_HEADERS})
+add_library(nanojitextra ${LIBRARY_TYPE} ${LIB_SRCS} ${NATIVE_SRC} ${EXT_SRCS} ${NANOJITEXTRA_HEADERS} ${LIB_HEADERS})
 target_link_libraries(nanojitextra ${EXTRA_LIBS})
 
 add_executable(lirasm ${LIRASM_SRCS})
