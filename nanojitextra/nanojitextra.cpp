@@ -535,7 +535,9 @@ bool NanoJitContextImpl::registerFunction(const std::string &name, void *fptr,
   Function function;
   function.name = name;
   function.callInfo._address = (uintptr_t)fptr;
+#if DEBUG
   function.callInfo._name = "";
+#endif
   function.callInfo._typesig = typeSig;
   function.callInfo._storeAccSet = ACCSET_STORE_ANY;
   function.callInfo._abi = nanojit::ABI_CDECL; // Assumed to be C calling
